@@ -69,8 +69,10 @@ jobs:
       uses: 'google-github-actions/setup-gcloud@v1'
     
     - name: 'Authenticate to Google Cloud'
+      env:
+        GCP_SA_KEY_BASE64: ${{ secrets.GCP_SA_KEY_BASE64 }}
       run: |
-        echo '${{ secrets.GCP_SA_KEY }}' > /tmp/key.json
+        echo "$GCP_SA_KEY_BASE64" | base64 -d > /tmp/key.json
         gcloud auth activate-service-account --key-file=/tmp/key.json
         gcloud config set project ${{ env.PROJECT_ID }}
         rm /tmp/key.json
