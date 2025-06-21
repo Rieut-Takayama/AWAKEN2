@@ -65,55 +65,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v1'
-    
-    - name: 'Authenticate to Google Cloud'
-      env:
-        GCP_SA_KEY_BASE64: ${{ secrets.GCP_SA_KEY_BASE64 }}
+    - name: 'Deploy to existing Cloud Run service'
       run: |
-        echo "$GCP_SA_KEY_BASE64" | base64 -d > /tmp/key.json
-        gcloud auth activate-service-account --key-file=/tmp/key.json
-        gcloud config set project ${{ env.PROJECT_ID }}
-        rm /tmp/key.json
-    
-    - name: 'Configure Docker'
-      run: gcloud auth configure-docker
-    
-    - name: 'Build and Push Container'
-      working-directory: ./backend
-      run: |
-        gcloud builds submit \
-          --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-    
-    - name: 'Deploy to Cloud Run'
-      run: |
-        gcloud run deploy ${{ env.SERVICE_NAME }} \
-          --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
-          --region ${{ env.REGION }} \
-          --platform managed \
-          --allow-unauthenticated \
-          --set-env-vars="NODE_ENV=production" \
-          --set-env-vars="APP_NAME=AWAKEN2" \
-          --set-env-vars="APP_VERSION=${{ github.sha }}" \
-          --set-env-vars="TRIAL_KEYS=${{ secrets.TRIAL_KEYS }}" \
-          --set-env-vars="JWT_SECRET=${{ secrets.JWT_SECRET }}" \
-          --set-env-vars="JWT_EXPIRES_IN=24h" \
-          --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-          --set-env-vars="DB_NAME=awaken2_db" \
-          --set-env-vars="MEXC_API_KEY=${{ secrets.MEXC_API_KEY }}" \
-          --set-env-vars="MEXC_API_SECRET=${{ secrets.MEXC_API_SECRET }}" \
-          --set-env-vars="MEXC_BASE_URL=https://api.mexc.com" \
-          --set-env-vars="TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" \
-          --set-env-vars="TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" \
-          --set-env-vars="ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
-          --set-env-vars="REDIS_URL=${{ secrets.REDIS_URL }}" \
-          --set-env-vars="REDIS_PORT=6379" \
-          --set-env-vars="CORS_ORIGIN=https://awaken2-frontend.web.app" \
-          --set-env-vars="BCRYPT_SALT_ROUNDS=12" \
-          --set-env-vars="UPDATE_INTERVAL=5000" \
-          --set-env-vars="SCORE_THRESHOLD_DEFAULT=75" \
-          --set-env-vars="NOTIFICATION_INTERVAL_DEFAULT=60"
+        echo "Cloud Runサービスは既に存在します。"
+        echo "手動でデプロイを実行してください："
+        echo ""
+        echo "1. Google Cloud Consoleにログイン"
+        echo "2. Cloud Runサービス 'awaken2-backend' を選択"
+        echo "3. 新しいリビジョンをデプロイ"
+        echo ""
+        echo "または、ローカルで以下のコマンドを実行："
+        echo "cd backend && ./deploy.sh"
     
     - name: 'Show Service URL'
       run: |
