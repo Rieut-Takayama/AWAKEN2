@@ -38,6 +38,16 @@ jobs:
     
     - name: Run tests
       working-directory: ./backend
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        MEXC_API_KEY: ${{ secrets.MEXC_API_KEY }}
+        MEXC_API_SECRET: ${{ secrets.MEXC_API_SECRET }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        REDIS_URL: ${{ secrets.REDIS_URL }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        NODE_ENV: test
       run: npm test --if-present
     
     - name: Build
