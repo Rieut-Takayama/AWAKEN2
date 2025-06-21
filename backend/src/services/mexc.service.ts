@@ -2,12 +2,6 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { databaseService } from './database.service';
 
-interface MexcTicker {
-    symbol: string;
-    price: string;
-    volume: string;
-    change24h: string;
-}
 
 interface PriceData {
     symbol: string;

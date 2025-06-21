@@ -55,3 +55,6 @@ frontend/dist/
 
 # 環境変数設定ファイル
 backend/env-vars.yaml
+
+# GitHub Secrets設定リスト（機密情報含む）
+GITHUB_SECRETS_LIST.md

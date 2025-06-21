@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { databaseConfig, logConfig } from './env.config';
+import { databaseConfig } from './env.config';
 import { logger } from '@/common/utils/logger.util';
 
 const connectionOptions: mongoose.ConnectOptions = {
