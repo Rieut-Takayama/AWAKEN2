@@ -1,0 +1,30 @@
+steps:
+  # Dockerイメージをビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/awaken2-backend', '.']
+  
+  # イメージをContainer Registryにプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/awaken2-backend']
+  
+  # Cloud Runにデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'awaken2-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/awaken2-backend'
+      - '--region'
+      - 'asia-northeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,PORT=8080,APP_NAME=AWAKEN2,APP_VERSION=1.0.0,TRIAL_KEYS=TRIAL2025,AWAKEN2,JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-2024,JWT_EXPIRES_IN=24h,DATABASE_URL=mongodb+srv://awakenusr:K6DH6e7FrbBm94X9@cluster0.wlp4e.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0,DB_NAME=awaken2_db,MEXC_API_KEY=mx0vglkSxsmgfH5LZI,MEXC_API_SECRET=your-mexc-api-secret,MEXC_BASE_URL=https://api.mexc.com,TELEGRAM_BOT_TOKEN=7869642251:AAHvXTcHE7Ui8gEy5gJ0AHJvd-M4ZNrM-4U,TELEGRAM_CHAT_ID=-1002308241944,ANTHROPIC_API_KEY=sk-ant-api03-n7kQ7s_XItEo0yVtWGqwNIZnkLqilhZGy_qZMSj5DwfE-KPOSYw_D4vJJdwSHcLNKu-j0jrBDQNQw-xoA3CgAA,REDIS_URL=redis://default:B1Vg5V9VdXa0JJAcOilqdbMPhf8sqhQ8@redis-10361.c280.us-central1-2.gce.redns.redis-cloud.com:10361,REDIS_PORT=6379,CORS_ORIGIN=https://awaken2-frontend.web.app,BCRYPT_SALT_ROUNDS=12,UPDATE_INTERVAL=5000,SCORE_THRESHOLD_DEFAULT=75,NOTIFICATION_INTERVAL_DEFAULT=60'
+
+images:
+  - 'gcr.io/$PROJECT_ID/awaken2-backend'

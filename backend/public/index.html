@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - 暗号通貨テクニカル分析通知ツール</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --bg-black: #000000;
+            --bg-transparent: rgba(0, 0, 0, .8);
+            --bg-card: rgba(0, 0, 0, .7);
+            --border-color: rgba(0, 255, 65, .3);
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', 'Roboto Mono', monospace;
+            background: var(--bg-black);
+            background-image: radial-gradient(rgba(0,255,0,.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: var(--matrix-green);
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: var(--bg-transparent);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, .1);
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--matrix-green);
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: .8rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            color: var(--matrix-green);
+            font-size: 1rem;
+            font-family: 'Roboto Mono', monospace;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 65, .5);
+            background: rgba(0, 0, 0, .9);
+        }
+
+        input::placeholder {
+            color: rgba(0, 255, 65, .5);
+        }
+
+        button {
+            width: 100%;
+            padding: .8rem 1.5rem;
+            background: rgba(0, 255, 65, .1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 65, .2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, .5);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error {
+            color: var(--danger-red);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 14px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 10px var(--matrix-green); }
+            100% { text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>AWAKEN2</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <input 
+                    type="password" 
+                    id="passkey" 
+                    placeholder="トライアルキーを入力"
+                    required
+                >
+            </div>
+            <button type="submit" id="submitBtn">
+                <span id="btnText">ログイン</span>
+            </button>
+            <div id="error" class="error"></div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const passkey = document.getElementById('passkey');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const error = document.getElementById('error');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            error.textContent = '';
+            
+            const key = passkey.value.trim();
+            if (!key) {
+                error.textContent = 'トライアルキーを入力してください';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/api/auth/trial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ passkey: key })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    window.location.href = '/dashboard.html';
+                } else {
+                    error.textContent = data.error || 'ログインに失敗しました';
+                }
+            } catch (err) {
+                error.textContent = 'サーバーとの通信に失敗しました';
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = 'ログイン';
+            }
+        });
+    </script>
+    <script src="/matrix-rain.js"></script>
+</body>
+</html>

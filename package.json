@@ -1,0 +1,11 @@
+{
+  "name": "awaken2",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "ts:check": "node scripts/ts-error/analyzer.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

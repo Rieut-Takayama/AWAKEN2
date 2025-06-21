@@ -1,0 +1,14 @@
+runtime: nodejs18
+service: awaken2-frontend
+
+handlers:
+- url: /
+  static_files: frontend/dist/index.html
+  upload: frontend/dist/index.html
+
+- url: /assets
+  static_dir: frontend/dist/assets
+
+- url: /.*
+  static_files: frontend/dist/index.html
+  upload: frontend/dist/index.html

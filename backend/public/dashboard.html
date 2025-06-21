@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - メインダッシュボード</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+        }
+
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #00ff41;
+            text-decoration: none;
+            text-shadow: 0 0 10px #00ff41;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff41; }
+            to { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41; }
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .current-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #00ff41;
+        }
+
+        .score-badge {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .settings-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .settings-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .logout-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .add-currency-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .add-currency-form {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .currency-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            color: #00ff41;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .currency-input:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .currency-input::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        .add-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .currency-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .currency-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .high-score-card {
+            border-color: #ff0040;
+            box-shadow: 0 0 30px rgba(255, 0, 64, 0.3);
+            animation: danger-pulse 2s infinite;
+        }
+
+        @keyframes danger-pulse {
+            0%, 100% { 
+                border-color: #ff0040;
+                box-shadow: 0 0 30px rgba(255, 0, 64, 0.3);
+            }
+            50% { 
+                border-color: #ff4070;
+                box-shadow: 0 0 40px rgba(255, 0, 64, 0.5);
+            }
+        }
+
+        .medium-score-card {
+            border-color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
+        }
+
+        .monitoring-status {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 4px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-label {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        
+        .status-value {
+            color: #00ff41;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .status-value.on {
+            color: #00ff41;
+        }
+        
+        .status-value.off {
+            color: #ff0040;
+        }
+
+        .currency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .currency-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .currency-price {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #00ff41;
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .score-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .high-score-card .score-value {
+            color: #ff0040;
+            text-shadow: 0 0 15px #ff0040;
+        }
+
+        .medium-score-card .score-value {
+            color: #ffaa00;
+            text-shadow: 0 0 10px #ffaa00;
+        }
+
+        .score-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            color: #00ff41;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mini-chart {
+            height: 40px;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-line {
+            stroke: #00ff41;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 3px #00ff41);
+        }
+        
+        .chart-area {
+            fill: rgba(0, 255, 65, 0.1);
+        }
+        
+        .chart-point {
+            fill: #ff0040;
+            stroke: #ff0040;
+            stroke-width: 2;
+            filter: drop-shadow(0 0 5px #ff0040);
+        }
+        
+        .technical-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .indicator-item {
+            text-align: center;
+        }
+        
+        .indicator-label {
+            font-size: 0.7rem;
+            color: rgba(0, 255, 65, 0.6);
+            text-transform: uppercase;
+        }
+        
+        .indicator-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #00ff41;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .indicator-value.danger {
+            color: #ff0040;
+        }
+        
+        .indicator-value.warning {
+            color: #ffaa00;
+        }
+        
+        .indicator-value.good {
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+        }
+
+        .trend-up {
+            color: #00ff41;
+        }
+
+        .trend-down {
+            color: #ff0040;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: rgba(0, 255, 65, 0.6);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(0, 255, 65, 0.2);
+            border-top: 2px solid #00ff41;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .high-score-alert {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .high-score-alert.danger {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid #ff0040;
+            color: #ff0040;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { 
+                opacity: 1; 
+                box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
+            }
+            51%, 100% { 
+                opacity: 0.7; 
+                box-shadow: 0 0 10px rgba(255, 0, 64, 0.1);
+            }
+        }
+
+        .notification-history {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .history-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: #00ff41;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        
+        .notification-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+        
+        .notification-time {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.85rem;
+        }
+        
+        .notification-symbol {
+            color: #00ff41;
+            font-weight: 700;
+        }
+        
+        .notification-score {
+            color: #ff0040;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .no-notifications {
+            text-align: center;
+            color: rgba(0, 255, 65, 0.5);
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .currency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .monitoring-status {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .technical-indicators {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script src="/matrix-rain.js"></script>
+    
+    <header class="header">
+        <a href="#" class="logo">AWAKEN2</a>
+        <div class="header-info">
+            <a href="/settings.html" class="settings-btn">設定</a>
+            <button class="logout-btn" onclick="logout()">ログアウト</button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <div id="highScoreAlert" class="high-score-alert">
+            <span id="alertContent"><strong>📊 監視中</strong><br>投資チャンスを分析しています</span>
+        </div>
+
+        <!-- 監視状態 -->
+        <div class="monitoring-status">
+            <div class="status-item">
+                <span class="status-label">通知設定</span>
+                <span id="notificationStatus" class="status-value">75点以上</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">次回通知可能</span>
+                <span id="nextNotification" class="status-value">--分後</span>
+            </div>
+        </div>
+
+        <div class="currency-grid" id="currencyGrid">
+            <!-- 動的に生成される通貨カード -->
+        </div>
+
+        <!-- 通知履歴とAI分析 -->
+        <div class="notification-history">
+            <h3 class="history-title">本日の通知履歴 <span style="font-size: 0.8rem; color: rgba(0, 255, 65, 0.6);">（クリックでAI分析）</span></h3>
+            <div id="notificationList" class="notification-list">
+                <div class="no-notifications">本日はまだ通知がありません</div>
+            </div>
+        </div>
+        
+        <!-- AI分析詳細モーダル -->
+        <div id="aiAnalysisModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 2000; overflow-y: auto;">
+            <div style="max-width: 800px; margin: 2rem auto; background: rgba(0, 0, 0, 0.95); border: 2px solid #00ff41; border-radius: 8px; padding: 2rem; position: relative;">
+                <button onclick="closeAIAnalysis()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255, 0, 64, 0.2); border: 1px solid #ff0040; color: #ff0040; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">✕ 閉じる</button>
+                
+                <h2 style="font-family: 'Orbitron', monospace; color: #00ff41; margin-bottom: 1.5rem; text-shadow: 0 0 10px #00ff41;">🤖 AI詳細分析レポート</h2>
+                
+                <div id="aiAnalysisContent">
+                    <!-- 動的に生成されるAI分析内容 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="last-updated">
+            最終更新: <span id="lastUpdated"></span>
+            <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
+        </div>
+    </main>
+
+    <script>
+        // 認証チェック
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // ログアウト機能
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        // 設定から取得する監視銘柄
+        let watchedCurrencies = [];
+        let settings = {
+            threshold: 75,
+            notificationInterval: 60,
+            notificationsEnabled: true
+        };
+        
+        // 通知履歴
+        let notificationHistory = [];
+        
+        // モックデータ生成関数
+        function generateMockData(symbol) {
+            const scores = Array.from({length: 24}, () => Math.floor(Math.random() * 40) + 45);
+            const currentScore = Math.floor(Math.random() * 40) + 50;
+            
+            // RSIスコア計算（30以下で高スコア、70以上で低スコア）
+            const rsiValue = Math.floor(Math.random() * 70) + 15;
+            let rsiScore;
+            if (rsiValue <= 30) rsiScore = Math.floor(Math.random() * 20) + 80; // 80-100
+            else if (rsiValue >= 70) rsiScore = Math.floor(Math.random() * 30) + 20; // 20-50
+            else rsiScore = Math.floor(Math.random() * 30) + 50; // 50-80
+            
+            // MACDスコア（bullishで高スコア）
+            const macdBullish = Math.random() > 0.5;
+            const macdScore = macdBullish ? Math.floor(Math.random() * 30) + 70 : Math.floor(Math.random() * 40) + 30;
+            
+            // BBスコア（指定配分での計算）
+            // 各時間足のBB位置（-2～+2の範囲）
+            const bb5m = Math.random() * 4 - 2;   // 5分足
+            const bb15m = Math.random() * 4 - 2;  // 15分足（メイン）
+            const bb30m = Math.random() * 4 - 2;  // 30分足
+            const bb1h = Math.random() * 4 - 2;   // 1時間足
+            const bb4h = Math.random() * 4 - 2;   // 4時間足
+            const bb1d = Math.random() * 4 - 2;   // 日足
+            
+            // 指定された重み付けで計算
+            const bbWeighted = (bb5m * 0.10) +    // 5分: 10%
+                              (bb15m * 0.40) +   // 15分: 40%（メイン）
+                              (bb30m * 0.25) +   // 30分: 25%
+                              (bb1h * 0.10) +    // 1時間: 10%
+                              (bb4h * 0.05) +    // 4時間: 5%
+                              (bb1d * 0.10);     // 日足: 10%
+            
+            let bbScore;
+            if (bbWeighted <= -2) {
+                bbScore = Math.floor(Math.random() * 10) + 90; // 90-100 即買い
+            } else if (bbWeighted <= -1.5) {
+                bbScore = Math.floor(Math.random() * 15) + 75; // 75-89 強い買い
+            } else if (bbWeighted <= -1) {
+                bbScore = Math.floor(Math.random() * 15) + 60; // 60-74 買い準備
+            } else if (bbWeighted >= 1.5) {
+                bbScore = Math.floor(Math.random() * 20) + 10; // 10-29 売り
+            } else {
+                bbScore = Math.floor(Math.random() * 20) + 40; // 40-59 中立
+            }
+            
+            return {
+                symbol: symbol,
+                name: symbol.replace('USDT', '/USDT'),
+                price: Math.random() * 50000 + 100,
+                score: currentScore,
+                trend: currentScore > 65 ? 'up' : currentScore < 50 ? 'down' : 'sideways',
+                change: ((Math.random() * 10) - 5).toFixed(1) + '%',
+                scoreHistory: scores,
+                rsiScore: rsiScore,
+                macdScore: macdScore,
+                bbScore: bbScore
+            };
+        }
+
+        function renderCurrencies() {
+            const grid = document.getElementById('currencyGrid');
+            const highScoreAlert = document.getElementById('highScoreAlert');
+            
+            // 高スコア通貨の存在確認
+            const hasHighScore = watchedCurrencies.some(currency => currency.score >= 75);
+            const alertContent = document.getElementById('alertContent');
+            
+            if (hasHighScore) {
+                highScoreAlert.classList.add('danger');
+                alertContent.innerHTML = '<strong>⚠ 投資チャンス検出 ⚠</strong><br>買い度指数75点以上の通貨があります';
+            } else {
+                highScoreAlert.classList.remove('danger');
+                alertContent.innerHTML = '<strong>📊 監視中</strong><br>投資チャンスを分析しています';
+            }
+            
+            // 監視状態の更新
+            const statusText = settings.notificationsEnabled ? `${settings.threshold}点以上` : '通知OFF';
+            document.getElementById('notificationStatus').textContent = statusText;
+            
+            // スコア順でソート
+            const sortedCurrencies = [...watchedCurrencies].sort((a, b) => b.score - a.score);
+            
+            grid.innerHTML = sortedCurrencies.map(currency => {
+                let cardClass = 'currency-card';
+                if (currency.score >= settings.threshold) cardClass += ' high-score-card';
+                else if (currency.score >= 60) cardClass += ' medium-score-card';
+                
+                // スパークラインの生成
+                const sparkline = generateSparkline(currency.scoreHistory, currency.score >= settings.threshold);
+                
+                // テクニカル指標のクラス（スコアに基づく）
+                const rsiClass = currency.rsiScore >= 75 ? 'good' : currency.rsiScore <= 40 ? 'danger' : 'warning';
+                const macdClass = currency.macdScore >= 75 ? 'good' : currency.macdScore <= 40 ? 'danger' : 'warning';
+                const bbClass = currency.bbScore >= 75 ? 'good' : currency.bbScore <= 40 ? 'danger' : 'warning';
+                
+                return `
+                    <div class="${cardClass}">
+                        <div class="currency-header">
+                            <div class="currency-name">${currency.name}</div>
+                            <div class="currency-price">$${currency.price.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="score-display">
+                            <div class="score-value">${currency.score}</div>
+                            <div class="score-label">買い度指数</div>
+                        </div>
+                        
+                        <div class="mini-chart">
+                            ${sparkline}
+                        </div>
+                        
+                        <div class="technical-indicators">
+                            <div class="indicator-item">
+                                <div class="indicator-label">RSI</div>
+                                <div class="indicator-value ${rsiClass}">${currency.rsiScore}点</div>
+                            </div>
+                            <div class="indicator-item">
+                                <div class="indicator-label">MACD</div>
+                                <div class="indicator-value ${macdClass}">${currency.macdScore}点</div>
+                            </div>
+                            <div class="indicator-item">
+                                <div class="indicator-label">BB</div>
+                                <div class="indicator-value ${bbClass}">${currency.bbScore}点</div>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-indicator ${currency.trend === 'up' ? 'trend-up' : 'trend-down'}">
+                            <span>${currency.change}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // スパークライン生成
+        function generateSparkline(data, hasHighScore) {
+            const width = 200;
+            const height = 40;
+            const padding = 2;
+            
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const range = max - min;
+            
+            const points = data.map((value, index) => {
+                const x = (index / (data.length - 1)) * (width - 2 * padding) + padding;
+                const y = height - ((value - min) / range) * (height - 2 * padding) - padding;
+                return `${x},${y}`;
+            }).join(' ');
+            
+            const highScorePoints = hasHighScore ? data.map((value, index) => {
+                if (value >= settings.threshold) {
+                    const x = (index / (data.length - 1)) * (width - 2 * padding) + padding;
+                    const y = height - ((value - min) / range) * (height - 2 * padding) - padding;
+                    return `<circle class="chart-point" cx="${x}" cy="${y}" r="2"/>`;
+                }
+                return '';
+            }).join('') : '';
+            
+            return `
+                <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                    <polyline class="chart-line" points="${points}"/>
+                    ${highScorePoints}
+                </svg>
+            `;
+        }
+        
+        // 通知履歴の表示
+        function renderNotificationHistory() {
+            const list = document.getElementById('notificationList');
+            
+            if (notificationHistory.length === 0) {
+                list.innerHTML = '<div class="no-notifications">本日はまだ通知がありません</div>';
+                return;
+            }
+            
+            list.innerHTML = notificationHistory.map((notification, index) => `
+                <div class="notification-item" onclick="showAIAnalysis(${index})">
+                    <span class="notification-time">${notification.time}</span>
+                    <span class="notification-symbol">${notification.symbol}</span>
+                    <span class="notification-score">${notification.score}点</span>
+                </div>
+            `).join('');
+        }
+        
+        // 次回通知可能時間の更新
+        function updateNextNotificationTime() {
+            // モック実装
+            const minutes = Math.floor(Math.random() * 60);
+            document.getElementById('nextNotification').textContent = minutes > 0 ? `${minutes}分後` : '通知可能';
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const formatted = now.toLocaleString('ja-JP', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastUpdated').textContent = formatted;
+        }
+
+        // 設定を読み込む
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data) {
+                        settings = data.data;
+                        // 設定から監視銘柄を初期化（実データは後で取得）
+                        if (settings.symbolsWithIntervals) {
+                            watchedCurrencies = settings.symbolsWithIntervals.map(item => ({
+                                symbol: item.symbol.replace('/', ''),
+                                name: item.symbol,
+                                interval: item.interval
+                            }));
+                        } else if (settings.symbols) {
+                            watchedCurrencies = settings.symbols.map(symbol => ({
+                                symbol: symbol.replace('/', ''),
+                                name: symbol,
+                                interval: settings.notificationInterval || 60
+                            }));
+                        }
+                        // 初回データ取得
+                        await fetchRealTimeData();
+                    }
+                }
+            } catch (error) {
+                console.error('設定の読み込みエラー:', error);
+                // デフォルトの銘柄を設定
+                watchedCurrencies = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT'].map(symbol => generateMockData(symbol));
+                renderCurrencies();
+                renderNotificationHistory();
+                updateNextNotificationTime();
+            }
+        }
+        
+        // AI分析を表示
+        function showAIAnalysis(index) {
+            const notification = notificationHistory[index];
+            if (!notification || !notification.detailData) return;
+            
+            const modal = document.getElementById('aiAnalysisModal');
+            const content = document.getElementById('aiAnalysisContent');
+            
+            // AI分析の生成（より詳細な分析）
+            const analysis = generateDetailedAIAnalysis(notification);
+            
+            content.innerHTML = analysis;
+            modal.style.display = 'block';
+        }
+        
+        // AI分析を閉じる
+        function closeAIAnalysis() {
+            document.getElementById('aiAnalysisModal').style.display = 'none';
+        }
+        
+        // 詳細なAI分析を生成
+        function generateDetailedAIAnalysis(notification) {
+            const data = notification.detailData;
+            
+            // 各指標の判断根拠
+            const rsiAnalysis = data.rsiScore >= 80 ? 
+                '売られすぎゾーンからの反発期待' : 
+                data.rsiScore <= 40 ? 
+                '買われすぎで調整リスクあり' : 
+                '中立的な水準';
+                
+            const macdAnalysis = data.macdScore >= 70 ? 
+                'ゴールデンクロス発生、上昇トレンド継続' : 
+                'デッドクロス警戒、下落リスク';
+                
+            const bbAnalysis = data.bbScore >= 75 ? 
+                'ボリンジャーバンド下限タッチ、反発買い好機' : 
+                '中間バンド付近、方向感待ち';
+            
+            return `
+                <div style="color: #00ff41; font-family: 'M PLUS 1 Code', monospace;">
+                    <h3 style="color: #00ff41; margin-bottom: 1rem;">📊 ${notification.symbol} - 通知時点の詳細分析</h3>
+                    
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: #ffaa00; margin-bottom: 0.5rem;">🔍 基本情報</h4>
+                        <p>通知時刻: ${notification.time}</p>
+                        <p>買い度指数: <span style="color: #ff0040; font-weight: bold;">${notification.score}点</span></p>
+                        <p>価格: $${data.price.toLocaleString()}</p>
+                        <p>24時間変動: ${data.change}</p>
+                    </div>
+                    
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: #ffaa00; margin-bottom: 0.5rem;">📈 テクニカル指標詳細</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h5 style="color: #00ff41;">RSI (${data.rsiScore}点)</h5>
+                            <p style="color: rgba(0, 255, 65, 0.8); font-size: 0.9rem;">${rsiAnalysis}</p>
+                            <div style="background: rgba(0, 0, 0, 0.5); height: 20px; border-radius: 10px; margin-top: 0.5rem;">
+                                <div style="background: ${data.rsiScore >= 70 ? '#00ff41' : data.rsiScore <= 40 ? '#ff0040' : '#ffaa00'}; height: 100%; width: ${data.rsiScore}%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h5 style="color: #00ff41;">MACD (${data.macdScore}点)</h5>
+                            <p style="color: rgba(0, 255, 65, 0.8); font-size: 0.9rem;">${macdAnalysis}</p>
+                            <div style="background: rgba(0, 0, 0, 0.5); height: 20px; border-radius: 10px; margin-top: 0.5rem;">
+                                <div style="background: ${data.macdScore >= 70 ? '#00ff41' : data.macdScore <= 40 ? '#ff0040' : '#ffaa00'}; height: 100%; width: ${data.macdScore}%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h5 style="color: #00ff41;">ボリンジャーバンド (${data.bbScore}点)</h5>
+                            <p style="color: rgba(0, 255, 65, 0.8); font-size: 0.9rem;">${bbAnalysis}</p>
+                            <div style="background: rgba(0, 0, 0, 0.5); height: 20px; border-radius: 10px; margin-top: 0.5rem;">
+                                <div style="background: ${data.bbScore >= 70 ? '#00ff41' : data.bbScore <= 40 ? '#ff0040' : '#ffaa00'}; height: 100%; width: ${data.bbScore}%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid #ffaa00; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: #ffaa00; margin-bottom: 0.5rem;">🎯 AI総合判断</h4>
+                        <p style="font-size: 0.95rem; line-height: 1.6;">
+                            ${notification.score >= 85 ? 
+                                '⚡ <strong>強い買いシグナル</strong>：複数の指標が買いサインを示しています。短期的な反発が期待できる絶好の買い場です。' :
+                                notification.score >= 75 ?
+                                '✅ <strong>買いシグナル</strong>：テクニカル指標が良好です。リスクを管理しながらエントリーを検討できます。' :
+                                '⚠️ <strong>様子見推奨</strong>：まだ明確な買いシグナルではありません。もう少し調整を待つことをお勧めします。'
+                            }
+                        </p>
+                    </div>
+                    
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); padding: 1rem; border-radius: 4px;">
+                        <h4 style="color: #ffaa00; margin-bottom: 0.5rem;">💡 推奨アクション</h4>
+                        <ul style="color: rgba(0, 255, 65, 0.8); font-size: 0.9rem; line-height: 1.8;">
+                            ${notification.score >= 85 ? `
+                                <li>即座にポジションを検討（ただし資金管理は徹底）</li>
+                                <li>損切りラインを${(data.price * 0.97).toFixed(2)}ドル付近に設定</li>
+                                <li>利確目標は${(data.price * 1.05).toFixed(2)}ドル（5%上昇）を第一目標に</li>
+                            ` : notification.score >= 75 ? `
+                                <li>少額でのエントリーを検討</li>
+                                <li>追加の確認シグナルを待つ</li>
+                                <li>出来高の増加を確認してから本格参入</li>
+                            ` : `
+                                <li>現時点ではエントリーを見送り</li>
+                                <li>さらなる下落を待って買い場を探る</li>
+                                <li>他の銘柄の機会を探すことも検討</li>
+                            `}
+                        </ul>
+                    </div>
+                    
+                    <p style="text-align: center; margin-top: 1.5rem; color: rgba(0, 255, 65, 0.6); font-size: 0.85rem;">
+                        ※これは参考情報です。投資判断は自己責任でお願いします。
+                    </p>
+                </div>
+            `;
+        }
+        
+        // 初期表示
+        updateLastUpdated();
+        loadSettings();
+        
+        // 実際のAPIからデータを取得
+        async function fetchRealTimeData() {
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'inline-block';
+            
+            try {
+                // 監視銘柄の実データを取得
+                const promises = watchedCurrencies.map(async (currency) => {
+                    const response = await fetch(`/api/realtime/analyze/${currency.symbol}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.data;
+                    }
+                    return null;
+                });
+                
+                const results = await Promise.all(promises);
+                
+                // 取得したデータで更新
+                watchedCurrencies = results.filter(data => data !== null);
+                
+                // 高スコアの通知を処理
+                watchedCurrencies.forEach(currency => {
+                    if (currency.score >= settings.threshold) {
+                        // 通知履歴に追加（重複チェック）
+                        const exists = notificationHistory.some(n => 
+                            n.symbol === currency.symbol && 
+                            new Date().getTime() - new Date(n.timestamp).getTime() < 60000
+                        );
+                        
+                        if (!exists) {
+                            notificationHistory.unshift({
+                                time: new Date().toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'}),
+                                symbol: currency.symbol,
+                                score: currency.score,
+                                detailData: {
+                                    price: currency.price,
+                                    change: currency.change24h,
+                                    rsiScore: currency.indicators?.rsi?.score || 0,
+                                    macdScore: currency.indicators?.macd?.score || 0,
+                                    bbScore: currency.indicators?.bb?.score || 0,
+                                    timestamp: new Date().toISOString()
+                                }
+                            });
+                            notificationHistory = notificationHistory.slice(0, 10);
+                        }
+                    }
+                });
+                
+                renderCurrencies();
+                renderNotificationHistory();
+                updateLastUpdated();
+                updateNextNotificationTime();
+                
+            } catch (error) {
+                console.error('データ取得エラー:', error);
+                // エラー時はモックデータにフォールバック
+                watchedCurrencies = watchedCurrencies.map(currency => generateMockData(currency.symbol));
+                renderCurrencies();
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+        
+        // 定期更新（5秒ごと）
+        setInterval(fetchRealTimeData, 5000);
+    </script>
+</body>
+</html>

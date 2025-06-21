@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - ログイン</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =================
+           基本設定
+           ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =================
+           マトリックス背景
+           ================= */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* =================
+           カラーパレット
+           ================= */
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --bg-black: #000000;
+            --bg-transparent: rgba(0, 0, 0, 0.8);
+        }
+
+        /* =================
+           ログインコンテナ
+           ================= */
+        .login-container {
+            background: var(--bg-transparent);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 3rem;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-container:hover {
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.5);
+        }
+
+        /* =================
+           ロゴ
+           ================= */
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-shadow: 0 0 20px var(--matrix-green);
+            animation: glow 2s ease-in-out infinite alternate;
+            margin: 0;
+            letter-spacing: 3px;
+        }
+
+        .logo p {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.9rem;
+            margin: 0.5rem 0 0 0;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px var(--matrix-green); }
+            to { text-shadow: 0 0 30px var(--matrix-green), 0 0 40px var(--matrix-green); }
+        }
+
+        /* =================
+           入力フィールド
+           ================= */
+        .input-field {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-field label {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.9rem;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .input-matrix {
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--matrix-green);
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .input-matrix:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .input-matrix::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        /* =================
+           ボタン
+           ================= */
+        .btn-matrix {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-matrix:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-matrix:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* =================
+           エラーメッセージ
+           ================= */
+        .error-message {
+            color: var(--danger-red);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* =================
+           記憶・パスワード忘れ
+           ================= */
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+            font-size: 0.8rem;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            color: rgba(0, 255, 65, 0.7);
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .remember-checkbox {
+            margin-right: 0.5rem;
+            width: 16px;
+            height: 16px;
+            background: transparent;
+            border: 1px solid var(--matrix-green);
+            border-radius: 2px;
+            appearance: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .remember-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            color: var(--matrix-green);
+            font-size: 12px;
+        }
+
+        .forgot-password {
+            color: var(--matrix-green);
+            text-decoration: none;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            text-shadow: 0 0 5px var(--matrix-green);
+        }
+
+        /* =================
+           ローディング
+           ================= */
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--matrix-green);
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading-dots {
+            animation: loading-pulse 1.5s infinite;
+        }
+
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* =================
+           モバイル対応
+           ================= */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .logo h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-rain" id="matrixRain"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <h1>AWAKEN2</h1>
+            <p>無料トライアル版</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="input-field">
+                <label for="passkey">トライアルキー</label>
+                <input id="passkey" type="text" class="input-matrix" required autocomplete="off" placeholder="トライアルキーを入力">
+                <div class="error-message" id="passkeyError">有効なキーを入力してください</div>
+            </div>
+            
+            <button type="submit" class="btn-matrix" id="loginBtn">
+                <span id="loginText">システムアクセス</span>
+            </button>
+            
+            <div class="loading" id="loading">
+                <div class="loading-dots">>>> 認証中...</div>
+            </div>
+            
+            <div class="error-message" id="generalError" style="text-align: center; margin-top: 16px;">
+アクセス拒否 - 無効なキー
+            </div>
+        </form>
+    </div>
+
+    
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.getElementById('matrixRain').appendChild(canvas);
+
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // DOM要素の取得
+        const loginForm = document.getElementById('loginForm');
+        const passkeyInput = document.getElementById('passkey');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loading = document.getElementById('loading');
+        const generalError = document.getElementById('generalError');
+        const passkeyError = document.getElementById('passkeyError');
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            createMatrixRain();
+            passkeyInput.focus();
+        });
+        
+        // リサイズ対応
+        window.addEventListener('resize', () => {
+            const canvas = document.querySelector('#matrixRain canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+        
+        // リアルタイムバリデーション
+        passkeyInput.addEventListener('blur', function() {
+            validatePasskey();
+        });
+        
+        // Enterキーでフォーム送信
+        passkeyInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // フォーム送信処理
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validatePasskey()) {
+                return;
+            }
+            
+            handleLogin();
+        });
+        
+        // パスキーバリデーション
+        function validatePasskey() {
+            const passkey = passkeyInput.value.trim();
+            
+            if (!passkey || passkey.length < 6) {
+                showFieldError(passkeyError);
+                return false;
+            } else {
+                hideFieldError(passkeyError);
+                return true;
+            }
+        }
+        
+        // フィールドエラー表示
+        function showFieldError(errorElement) {
+            errorElement.style.display = 'block';
+        }
+        
+        // フィールドエラー非表示
+        function hideFieldError(errorElement) {
+            errorElement.style.display = 'none';
+        }
+        
+        // ログイン処理
+        async function handleLogin() {
+            const passkey = passkeyInput.value.trim();
+            
+            // UI状態変更
+            setLoadingState(true);
+            hideFieldError(generalError);
+            
+            try {
+                // モックAPIコール（実際の実装では本物のAPIを呼び出し）
+                const response = await mockApiCall('/api/auth/trial', {
+                    passkey: passkey
+                });
+                
+                if (response.success) {
+                    // 成功時の処理
+                    localStorage.setItem('trial_token', response.token);
+                    localStorage.setItem('trial_expires', response.expires);
+                    
+                    // ダッシュボードへリダイレクト（モックでは成功メッセージ表示）
+                    alert('>>> トライアルアクセス承認 - AWAKEN2へようこそ！');
+                    // window.location.href = '/dashboard';
+                } else {
+                    throw new Error(response.message || 'Invalid access key');
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                generalError.style.display = 'block';
+            } finally {
+                setLoadingState(false);
+            }
+        }
+        
+        // ローディング状態の制御
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginText.textContent = '認証中...';
+                loading.style.display = 'block';
+            } else {
+                loginBtn.disabled = false;
+                loginText.textContent = 'システムアクセス';
+                loading.style.display = 'none';
+            }
+        }
+        
+        
+        // モックAPIコール
+        function mockApiCall(endpoint, data) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // モックデータ（実際の実装では削除）
+                    if (data.passkey === 'TRIAL2025' || data.passkey === 'AWAKEN2') {
+                        resolve({
+                            success: true,
+                            token: 'trial_token_' + Date.now(),
+                            expires: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30日後
+                            user: { trial: true, id: 1 }
+                        });
+                    } else {
+                        reject(new Error('無効なトライアルキー'));
+                    }
+                }, 1500); // 1.5秒の遅延でリアルなAPI感を演出
+            });
+        }
+        
+        // デモ用のトライアルキー自動入力（開発用 - 本番では削除）
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                passkeyInput.value = 'TRIAL2025';
+            }
+        });
+    </script>
+</body>
+</html>

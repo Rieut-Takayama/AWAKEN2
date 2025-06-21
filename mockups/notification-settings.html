@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - 通知設定</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =================
+           基本設定
+           ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+        }
+
+        /* =================
+           マトリックス背景
+           ================= */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* =================
+           カラーパレット
+           ================= */
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --bg-black: #000000;
+            --bg-transparent: rgba(0, 0, 0, 0.8);
+        }
+
+        /* =================
+           ヘッダー
+           ================= */
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-decoration: none;
+            text-shadow: 0 0 10px var(--matrix-green);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--matrix-green); }
+            to { text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green); }
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .current-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--matrix-green);
+            font-weight: 500;
+            text-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: rgba(0, 255, 65, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--matrix-green);
+            text-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .logout-btn {
+            background: rgba(255, 0, 64, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 64, 0.4);
+            box-shadow: 0 0 10px var(--danger-red);
+        }
+
+        /* =================
+           メインレイアウト
+           ================= */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            color: var(--matrix-green);
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px var(--matrix-green);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* =================
+           入力フィールド
+           ================= */
+        .input-matrix {
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--matrix-green);
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .input-matrix:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .input-matrix::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        /* =================
+           カード
+           ================= */
+        .card-matrix {
+            background: var(--bg-transparent);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .card-matrix:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        /* =================
+           ボタン
+           ================= */
+        .btn-matrix {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-matrix:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 64, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 0, 64, 0.4);
+            box-shadow: 0 0 10px var(--danger-red);
+        }
+
+        /* =================
+           設定セクション
+           ================= */
+        .section-title {
+            color: var(--matrix-green);
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .section-title::before {
+            content: '> ';
+            color: var(--matrix-green);
+        }
+
+        /* スコア表示 */
+        .threshold-container {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .threshold-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-shadow: 0 0 20px var(--matrix-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .threshold-label {
+            color: rgba(0, 255, 65, 0.8);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* スライダー */
+        .slider-container {
+            margin: 2rem 0;
+        }
+
+        .custom-slider {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 255, 65, 0.3);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--matrix-green);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .custom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--matrix-green);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(0, 255, 65, 0.7);
+        }
+
+        /* API設定 */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--matrix-green);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .input-hint {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: rgba(0, 255, 65, 0.6);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 4px;
+            color: rgba(0, 255, 65, 0.7);
+            margin-top: 1rem;
+        }
+
+        .status-indicator.connected {
+            border-color: var(--matrix-green);
+            color: var(--matrix-green);
+            text-shadow: 0 0 5px var(--matrix-green);
+        }
+
+        /* 銘柄選択 */
+        .symbol-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .symbol-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: rgba(0, 255, 65, 0.7);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .symbol-btn:hover {
+            border-color: var(--matrix-green);
+            color: var(--matrix-green);
+        }
+
+        .symbol-btn.active {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--matrix-green);
+            color: var(--matrix-green);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .custom-symbol {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .add-symbol-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 60px;
+            transition: all 0.3s ease;
+        }
+
+        .add-symbol-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .selected-symbols {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .selected-title {
+            color: var(--matrix-green);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .selected-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .selected-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            color: var(--matrix-green);
+            font-size: 0.9rem;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .remove-symbol {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--danger-red);
+            transition: all 0.3s ease;
+        }
+
+        .remove-symbol:hover {
+            text-shadow: 0 0 5px var(--danger-red);
+        }
+
+        /* 通知間隔 */
+        .interval-container {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .interval-display {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .interval-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-shadow: 0 0 20px var(--matrix-green);
+        }
+
+        .interval-unit {
+            font-size: 1.5rem;
+            color: var(--matrix-green);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .interval-label {
+            color: rgba(0, 255, 65, 0.8);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* テレグラム設定 */
+        .telegram-status {
+            margin-bottom: 2rem;
+        }
+
+        .status-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+            color: var(--matrix-green);
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-title {
+            color: var(--matrix-green);
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-desc {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.disconnected {
+            background: var(--danger-red);
+        }
+
+        .status-dot.connected {
+            background: var(--matrix-green);
+        }
+
+        .status-text {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .telegram-setup-guide {
+            margin-bottom: 2rem;
+        }
+
+        .guide-title {
+            color: var(--matrix-green);
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        .setup-step {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+
+        .step-number {
+            background: var(--matrix-green);
+            color: #000;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .step-title {
+            color: var(--matrix-green);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .step-content {
+            padding: 1.5rem;
+        }
+
+        .step-content p {
+            color: rgba(0, 255, 65, 0.8);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .step-note {
+            color: rgba(0, 255, 65, 0.6);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .command-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .command-box code {
+            color: var(--matrix-green);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+        }
+
+        .input-with-validation {
+            margin: 1rem 0;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            color: var(--matrix-green);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .config-input:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .config-input::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        .config-input.valid {
+            border-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .config-input.invalid {
+            border-color: var(--danger-red);
+            box-shadow: 0 0 10px rgba(255, 0, 64, 0.3);
+        }
+
+        .validation-message {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            min-height: 20px;
+        }
+
+        .validation-message.valid {
+            color: #28a745;
+        }
+
+        .validation-message.invalid {
+            color: var(--danger-red);
+        }
+
+        .test-result {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+
+        .test-result.success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+
+        .test-result.error {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .telegram-features {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .feature-title {
+            color: var(--matrix-green);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-text {
+            color: var(--matrix-green);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .feature-text small {
+            color: rgba(0, 255, 65, 0.7);
+            font-size: 0.7rem;
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .telegram-btn {
+            background: rgba(0, 136, 204, 0.2);
+            color: #0088cc;
+            border: 1px solid #0088cc;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .telegram-btn:hover {
+            background: rgba(0, 136, 204, 0.4);
+            box-shadow: 0 0 10px rgba(0, 136, 204, 0.5);
+        }
+
+        .test-btn {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .test-btn:hover {
+            background: rgba(40, 167, 69, 0.4);
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        /* 推奨設定 */
+        .recommendation {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-orange);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .recommendation-title {
+            color: var(--warning-orange);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .recommendation-text {
+            color: rgba(255, 170, 0, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* 保存セクション */
+        .save-section {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .save-btn {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--matrix-green);
+            border: 2px solid var(--matrix-green);
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .save-btn:hover {
+            background: rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            text-shadow: 0 0 5px var(--matrix-green);
+        }
+
+        /* =================
+           モバイル対応
+           ================= */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .dashboard-title {
+                font-size: 2rem;
+            }
+
+            .symbol-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .telegram-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .config-item {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .config-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-rain" id="matrixRain"></div>
+
+    <header class="header">
+        <a href="#" class="logo">AWAKEN2</a>
+        <div class="header-info">
+            <div class="current-score">
+                現在スコア: 72点
+            </div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-item">ダッシュボード</a>
+                <a href="/settings" class="nav-item active">通知設定</a>
+                <a href="/history" class="nav-item">履歴</a>
+                <button class="logout-btn">ログアウト</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1 class="dashboard-title">通知設定</h1>
+        
+        <!-- 買い度スコア閾値設定 -->
+        <div class="card-matrix">
+            <h2 class="section-title">買い度スコア閾値</h2>
+            
+            <div class="threshold-container">
+                <div class="threshold-display" id="thresholdDisplay">75</div>
+                <div class="threshold-label">点以上で通知</div>
+                
+                <div class="slider-container">
+                    <input type="range" id="thresholdSlider" class="custom-slider" 
+                           min="60" max="90" value="75" step="5">
+                    <div class="slider-labels">
+                        <span>60</span>
+                        <span>75</span>
+                        <span>90</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">推奨設定</div>
+                <div class="recommendation-text">
+                    初心者: 75点 | 経験者: 80点以上 | 過去30日間75点設定で78%的中率
+                </div>
+            </div>
+        </div>
+
+        <!-- MEXC API設定 -->
+        <div class="card-matrix">
+            <h2 class="section-title">MEXC API設定</h2>
+            
+            <div class="input-group">
+                <label for="apiKey">APIキー</label>
+                <input type="password" id="apiKey" placeholder="MEXC APIキーを入力してください" class="input-matrix">
+                <small class="input-hint">MEXC取引所のAPI管理画面で取得</small>
+            </div>
+            
+            <div class="input-group">
+                <label for="apiSecret">APIシークレット</label>
+                <input type="password" id="apiSecret" placeholder="APIシークレットを入力してください" class="input-matrix">
+                <small class="input-hint">読み取り専用権限を推奨</small>
+            </div>
+            
+            <div class="status-indicator" id="apiStatus">
+                <span>API状態: 未設定</span>
+            </div>
+        </div>
+
+        <!-- 監視銘柄設定 -->
+        <div class="card-matrix">
+            <h2 class="section-title">監視銘柄設定</h2>
+            
+            <div class="symbol-buttons">
+                <button class="symbol-btn active" data-symbol="BTCUSDT">BTC/USDT</button>
+                <button class="symbol-btn active" data-symbol="ETHUSDT">ETH/USDT</button>
+                <button class="symbol-btn" data-symbol="BNBUSDT">BNB/USDT</button>
+                <button class="symbol-btn" data-symbol="SOLUSDT">SOL/USDT</button>
+                <button class="symbol-btn" data-symbol="ADAUSDT">ADA/USDT</button>
+                <button class="symbol-btn" data-symbol="DOTUSDT">DOT/USDT</button>
+            </div>
+            
+            <div class="custom-symbol">
+                <input type="text" id="customSymbol" placeholder="カスタム銘柄を追加 (例: XRPUSDT)" class="input-matrix">
+                <button class="add-symbol-btn" id="addSymbolBtn">追加</button>
+            </div>
+            
+            <div class="selected-symbols">
+                <div class="selected-title">選択中の銘柄 (2/10)</div>
+                <div class="selected-list" id="selectedSymbols">
+                    <span class="selected-item">BTC/USDT <span class="remove-symbol" data-symbol="BTCUSDT">×</span></span>
+                    <span class="selected-item">ETH/USDT <span class="remove-symbol" data-symbol="ETHUSDT">×</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知間隔設定 -->
+        <div class="card-matrix">
+            <h2 class="section-title">通知間隔設定</h2>
+            
+            <div class="interval-container">
+                <div class="interval-display">
+                    <span class="interval-number" id="intervalDisplay">60</span>
+                    <span class="interval-unit">分</span>
+                </div>
+                <div class="interval-label">同じ銘柄の次回通知まで</div>
+                
+                <div class="slider-container">
+                    <input type="range" id="intervalSlider" class="custom-slider" 
+                           min="15" max="240" value="60" step="15">
+                    <div class="slider-labels">
+                        <span>15分</span>
+                        <span>60分</span>
+                        <span>240分</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">推奨設定</div>
+                <div class="recommendation-text">
+                    短期取引: 30分 | スイング取引: 60分以上 | 重複通知防止で冷静な判断をサポート
+                </div>
+            </div>
+        </div>
+
+        <!-- テレグラム通知設定 -->
+        <div class="card-matrix">
+            <h2 class="section-title">テレグラム通知設定</h2>
+            
+            <div class="telegram-status">
+                <div class="status-card" id="telegramStatus">
+                    <div class="status-icon">⚡</div>
+                    <div class="status-info">
+                        <div class="status-title">テレグラム通知</div>
+                        <div class="status-desc" id="telegramStatusDesc">未設定 - 設定を開始してください</div>
+                    </div>
+                    <div class="status-indicator" id="telegramStatusIndicator">
+                        <span class="status-dot disconnected"></span>
+                        <span class="status-text">未接続</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="telegram-setup-guide">
+                <div class="guide-title">📱 テレグラム通知の設定手順</div>
+                
+                <div class="setup-step">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">AWAKEN2ボットを開始</div>
+                    </div>
+                    <div class="step-content">
+                        <p>下のボタンをクリックしてテレグラムでAWAKEN2ボットを開きます</p>
+                        <button class="telegram-btn" onclick="window.open('https://t.me/AWAKEN2_bot', '_blank')">
+                            📱 @AWAKEN2_bot を開く
+                        </button>
+                        <div class="step-note">※ テレグラムアプリがインストールされている必要があります</div>
+                    </div>
+                </div>
+                
+                <div class="setup-step">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">/start コマンドを送信</div>
+                    </div>
+                    <div class="step-content">
+                        <p>ボットのチャットで以下のコマンドを送信してください</p>
+                        <div class="command-box">
+                            <code>/start</code>
+                            <button class="copy-btn" onclick="copyToClipboard('/start')">📋 コピー</button>
+                        </div>
+                        <div class="step-note">ボットから「チャットID: 123456789」のような返信が来ます</div>
+                    </div>
+                </div>
+                
+                <div class="setup-step">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">チャットIDを入力</div>
+                    </div>
+                    <div class="step-content">
+                        <p>ボットから送信されたチャットIDを下の欄に入力してください</p>
+                        <div class="input-with-validation">
+                            <input type="text" id="telegramChatId" placeholder="例: 123456789" class="config-input" pattern="[0-9-]+" title="数字とハイフンのみ入力可能">
+                            <div class="validation-message" id="chatIdValidation"></div>
+                        </div>
+                        <div class="step-note">チャットIDは数字のみ、または負の数値（グループの場合）です</div>
+                    </div>
+                </div>
+                
+                <div class="setup-step">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">接続テスト</div>
+                    </div>
+                    <div class="step-content">
+                        <p>チャットIDを入力後、テスト通知を送信して接続を確認します</p>
+                        <button class="test-btn" id="testTelegramBtn" disabled>
+                            🔔 テスト通知を送信
+                        </button>
+                        <div class="test-result" id="testResult"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="telegram-features">
+                <div class="feature-title">📋 テレグラム通知の特徴</div>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">💰</div>
+                        <div class="feature-text">完全無料<br><small>APIに制限なし</small></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-text">リアルタイム<br><small>瞬時に通知</small></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-text">マルチデバイス<br><small>スマホ・PC対応</small></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-text">セキュア<br><small>暗号化通信</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 保存セクション -->
+        <div class="save-section">
+            <button class="save-btn" id="saveSettings">
+                設定を保存
+            </button>
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+    </main>
+
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.getElementById('matrixRain').appendChild(canvas);
+
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // 初期化
+        createMatrixRain();
+
+        // リサイズ対応
+        window.addEventListener('resize', () => {
+            const canvas = document.querySelector('#matrixRain canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // スライダーによる閾値変更
+        const thresholdSlider = document.getElementById('thresholdSlider');
+        const thresholdDisplay = document.getElementById('thresholdDisplay');
+        
+        thresholdSlider.addEventListener('input', function() {
+            thresholdDisplay.textContent = this.value;
+        });
+
+        // 通知間隔スライダー
+        const intervalSlider = document.getElementById('intervalSlider');
+        const intervalDisplay = document.getElementById('intervalDisplay');
+        
+        intervalSlider.addEventListener('input', function() {
+            intervalDisplay.textContent = this.value;
+        });
+
+        // 銘柄選択機能
+        const symbolButtons = document.querySelectorAll('.symbol-btn');
+        const selectedSymbols = document.getElementById('selectedSymbols');
+        const addSymbolBtn = document.getElementById('addSymbolBtn');
+        const customSymbolInput = document.getElementById('customSymbol');
+        
+        let selectedCount = 2;
+        
+        symbolButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const symbol = this.dataset.symbol;
+                
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    removeSymbolFromList(symbol);
+                } else {
+                    if (selectedCount < 10) {
+                        this.classList.add('active');
+                        addSymbolToList(symbol, this.textContent);
+                    } else {
+                        alert('最大10銘柄まで選択できます');
+                    }
+                }
+            });
+        });
+        
+        // カスタム銘柄追加
+        addSymbolBtn.addEventListener('click', function() {
+            const symbol = customSymbolInput.value.trim().toUpperCase();
+            if (symbol && selectedCount < 10) {
+                addSymbolToList(symbol, symbol);
+                customSymbolInput.value = '';
+            }
+        });
+        
+        function addSymbolToList(symbol, displayName) {
+            const item = document.createElement('span');
+            item.className = 'selected-item';
+            item.innerHTML = `${displayName} <span class="remove-symbol" data-symbol="${symbol}">×</span>`;
+            selectedSymbols.appendChild(item);
+            
+            selectedCount++;
+            updateSelectedTitle();
+            
+            item.querySelector('.remove-symbol').addEventListener('click', function() {
+                removeSymbolFromList(symbol);
+                item.remove();
+            });
+        }
+        
+        function removeSymbolFromList(symbol) {
+            selectedCount--;
+            updateSelectedTitle();
+            
+            const btn = document.querySelector(`[data-symbol="${symbol}"]`);
+            if (btn && btn.classList.contains('symbol-btn')) {
+                btn.classList.remove('active');
+            }
+        }
+        
+        function updateSelectedTitle() {
+            const title = document.querySelector('.selected-title');
+            title.textContent = `選択中の銘柄 (${selectedCount}/10)`;
+        }
+        
+        // API接続テスト
+        const apiKeyInput = document.getElementById('apiKey');
+        const apiSecretInput = document.getElementById('apiSecret');
+        const apiStatus = document.getElementById('apiStatus');
+        
+        function testApiConnection() {
+            if (apiKeyInput.value && apiSecretInput.value) {
+                apiStatus.innerHTML = '<span>API状態: 接続中...</span>';
+                
+                setTimeout(() => {
+                    apiStatus.className = 'status-indicator connected';
+                    apiStatus.innerHTML = '<span>API状態: 接続済み</span>';
+                }, 2000);
+            }
+        }
+        
+        apiKeyInput.addEventListener('blur', testApiConnection);
+        apiSecretInput.addEventListener('blur', testApiConnection);
+        
+        // コピー機能
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = event.target;
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ コピー済み';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert('コピーに失敗しました');
+            });
+        }
+
+        // チャットID検証
+        const telegramChatId = document.getElementById('telegramChatId');
+        const chatIdValidation = document.getElementById('chatIdValidation');
+        const testTelegramBtn = document.getElementById('testTelegramBtn');
+        const telegramStatus = document.getElementById('telegramStatus');
+        const telegramStatusDesc = document.getElementById('telegramStatusDesc');
+        const telegramStatusIndicator = document.getElementById('telegramStatusIndicator');
+        
+        function validateChatId(chatId) {
+            // チャットIDの形式チェック（数字のみ、または負の数値）
+            const pattern = /^-?\d+$/;
+            return pattern.test(chatId) && chatId.length >= 8;
+        }
+        
+        telegramChatId.addEventListener('input', function() {
+            const chatId = this.value.trim();
+            
+            if (chatId === '') {
+                this.className = 'config-input';
+                chatIdValidation.textContent = '';
+                testTelegramBtn.disabled = true;
+                return;
+            }
+            
+            if (validateChatId(chatId)) {
+                this.className = 'config-input valid';
+                chatIdValidation.className = 'validation-message valid';
+                chatIdValidation.textContent = '✅ 有効なチャットID形式です';
+                testTelegramBtn.disabled = false;
+            } else {
+                this.className = 'config-input invalid';
+                chatIdValidation.className = 'validation-message invalid';
+                chatIdValidation.textContent = '❌ 無効なチャットID形式です（例: 123456789）';
+                testTelegramBtn.disabled = true;
+            }
+        });
+        
+        // テレグラムテスト通知
+        const testResult = document.getElementById('testResult');
+        
+        testTelegramBtn.addEventListener('click', function() {
+            const chatId = telegramChatId.value.trim();
+            
+            if (!validateChatId(chatId)) {
+                testResult.className = 'test-result error';
+                testResult.textContent = '❌ 有効なチャットIDを入力してください';
+                return;
+            }
+            
+            this.textContent = '📡 送信中...';
+            this.disabled = true;
+            testResult.textContent = '';
+            
+            // 実際のテレグラム通知送信をシミュレート
+            setTimeout(() => {
+                // 成功をシミュレート（実際の実装では APIレスポンスに基づく）
+                const isSuccess = Math.random() > 0.2; // 80%の成功率
+                
+                if (isSuccess) {
+                    this.textContent = '✅ 送信完了';
+                    testResult.className = 'test-result success';
+                    testResult.textContent = '🎉 テスト通知が正常に送信されました！テレグラムをご確認ください。';
+                    
+                    // ステータス更新
+                    telegramStatusDesc.textContent = `設定完了 - チャットID: ${chatId}`;
+                    telegramStatusIndicator.innerHTML = '<span class="status-dot connected"></span><span class="status-text">接続済み</span>';
+                    
+                } else {
+                    this.textContent = '❌ 送信失敗';
+                    testResult.className = 'test-result error';
+                    testResult.textContent = '⚠️ 通知送信に失敗しました。チャットIDを確認するか、ボットをブロックしていないかご確認ください。';
+                }
+                
+                setTimeout(() => {
+                    this.textContent = '🔔 テスト通知を送信';
+                    this.disabled = false;
+                }, 3000);
+            }, 2000);
+        });
+
+        // 設定保存
+        const saveButton = document.getElementById('saveSettings');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        saveButton.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 100);
+            
+            statusMessage.textContent = '設定が正常に保存されました';
+            statusMessage.className = 'status-message success';
+            statusMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
+            
+            console.log('設定保存:', {
+                threshold: thresholdSlider.value,
+                interval: intervalSlider.value,
+                telegramChatId: telegramChatId.value,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // ページ読み込み時のアニメーション
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.card-matrix');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animation = 'slideUp 0.5s ease-out';
+                }, index * 100);
+            });
+        });
+    </script>
+
+    <style>
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+</html>

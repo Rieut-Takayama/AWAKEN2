@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - メインダッシュボード</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: 
+                radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+        }
+
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #00ff41;
+            text-decoration: none;
+            text-shadow: 0 0 10px #00ff41;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff41; }
+            to { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41; }
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .current-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #00ff41;
+        }
+
+        .score-badge {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: #00ff41;
+            font-size: 1.5rem;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 8px;
+            height: 8px;
+            background: #ff0040;
+            border-radius: 50%;
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .logout-btn {
+            background: rgba(255, 0, 64, 0.2);
+            color: #ff0040;
+            border: 1px solid #ff0040;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 64, 0.4);
+            box-shadow: 0 0 10px #ff0040;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            color: #00ff41;
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px #00ff41;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* add-currency-sectionと関連CSSを削除 */
+
+        .add-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .currency-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .currency-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .high-score-card {
+            border-color: #ff0040;
+            box-shadow: 0 0 30px rgba(255, 0, 64, 0.3);
+            animation: danger-pulse 2s infinite;
+        }
+
+        @keyframes danger-pulse {
+            0%, 100% { 
+                border-color: #ff0040;
+                box-shadow: 0 0 30px rgba(255, 0, 64, 0.3);
+            }
+            50% { 
+                border-color: #ff4070;
+                box-shadow: 0 0 40px rgba(255, 0, 64, 0.5);
+            }
+        }
+
+        .medium-score-card {
+            border-color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 64, 0.2);
+            border: 1px solid #ff0040;
+            border-radius: 2px;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: #ff0040;
+            font-size: 12px;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 0, 64, 0.4);
+            box-shadow: 0 0 5px #ff0040;
+        }
+
+        .currency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .currency-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .currency-price {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #00ff41;
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .score-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .high-score-card .score-value {
+            color: #ff0040;
+            text-shadow: 0 0 15px #ff0040;
+        }
+
+        .medium-score-card .score-value {
+            color: #ffaa00;
+            text-shadow: 0 0 10px #ffaa00;
+        }
+
+        .score-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            color: #00ff41;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+        }
+
+        .trend-up {
+            color: #00ff41;
+        }
+
+        .trend-down {
+            color: #ff0040;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: rgba(0, 255, 65, 0.6);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(0, 255, 65, 0.2);
+            border-top: 2px solid #00ff41;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .high-score-alert {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid #ff0040;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #ff0040;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { 
+                opacity: 1; 
+                box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
+            }
+            51%, 100% { 
+                opacity: 0.7; 
+                box-shadow: 0 0 10px rgba(255, 0, 64, 0.1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .header-info {
+                gap: 1rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            
+            .currency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-currency-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-rain" id="matrixRain"></div>
+    
+    <header class="header">
+        <a href="#" class="logo">AWAKEN2</a>
+        <div class="header-info">
+            <div class="current-score">
+                <span>最高スコア:</span>
+                <span class="score-badge" id="maxScore">82</span>
+            </div>
+            <div class="notification-icon">
+                <span>🔔</span>
+                <div class="notification-dot"></div>
+            </div>
+            <button class="logout-btn">ログアウト</button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1 class="dashboard-title">リアルタイム分析ダッシュボード</h1>
+        
+        <div id="highScoreAlert" class="high-score-alert" style="display: none;">
+            <strong>⚠ 投資チャンス検出 ⚠</strong><br>買い度指数75点以上の通貨があります
+        </div>
+
+
+        <div class="currency-grid" id="currencyGrid">
+            <!-- 動的に生成される通貨カード -->
+        </div>
+
+        <div class="last-updated">
+            最終更新: <span id="lastUpdated">2025-06-20 14:30:25</span>
+            <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
+        </div>
+    </main>
+
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.getElementById('matrixRain').appendChild(canvas);
+
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン暗号解析投資仮想通貨買売分析';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // モックデータ（3銘柄まで）
+        const mockCurrencies = [
+            {
+                symbol: 'BTCUSDT',
+                name: 'ビットコイン',
+                price: 43250.67,
+                score: 82,
+                trend: 'up',
+                change: '+2.4%'
+            },
+            {
+                symbol: 'ETHUSDT',
+                name: 'イーサリアム',
+                price: 2567.89,
+                score: 76,
+                trend: 'up',
+                change: '+1.8%'
+            },
+            {
+                symbol: 'ADAUSDT',
+                name: 'カルダノ',
+                price: 0.4523,
+                score: 68,
+                trend: 'down',
+                change: '-0.5%'
+            }
+        ];
+
+        const MAX_CURRENCIES = 3;
+
+        let watchedCurrencies = [...mockCurrencies];
+
+        function renderCurrencies() {
+            const grid = document.getElementById('currencyGrid');
+            const highScoreAlert = document.getElementById('highScoreAlert');
+            
+            // 高スコア通貨の存在確認
+            const hasHighScore = watchedCurrencies.some(currency => currency.score >= 75);
+            highScoreAlert.style.display = hasHighScore ? 'block' : 'none';
+            
+            // 銘柄数と最高スコア更新
+            document.getElementById('currencyCount').textContent = watchedCurrencies.length;
+            const maxScore = watchedCurrencies.length > 0 ? Math.max(...watchedCurrencies.map(c => c.score)) : 0;
+            document.getElementById('maxScore').textContent = maxScore;
+            
+            // スコア順でソート
+            const sortedCurrencies = [...watchedCurrencies].sort((a, b) => b.score - a.score);
+            
+            grid.innerHTML = sortedCurrencies.map(currency => {
+                let cardClass = 'currency-card';
+                if (currency.score >= 75) cardClass += ' high-score-card';
+                else if (currency.score >= 60) cardClass += ' medium-score-card';
+                
+                return `
+                    <div class="${cardClass}">
+                        <button class="remove-btn" onclick="removeCurrency('${currency.symbol}')">
+                            ×
+                        </button>
+                        
+                        <div class="currency-header">
+                            <div class="currency-name">${currency.name}</div>
+                            <div class="currency-price">$${currency.price.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="score-display">
+                            <div class="score-value">${currency.score}</div>
+                            <div class="score-label">買い度指数</div>
+                        </div>
+                        
+                        <div class="trend-indicator ${currency.trend === 'up' ? 'trend-up' : 'trend-down'}">
+                            <span>${currency.trend === 'up' ? '▲' : '▼'}</span>
+                            <span>${currency.change}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // addCurrency関数を削除（銘柄追加は設定ページから行う）
+
+        function removeCurrency(symbol) {
+            watchedCurrencies = watchedCurrencies.filter(currency => currency.symbol !== symbol);
+            renderCurrencies();
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const formatted = now.getFullYear() + '-' + 
+                            String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                            String(now.getDate()).padStart(2, '0') + ' ' +
+                            String(now.getHours()).padStart(2, '0') + ':' + 
+                            String(now.getMinutes()).padStart(2, '0') + ':' + 
+                            String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('lastUpdated').textContent = formatted;
+        }
+
+        function simulateRealTimeUpdates() {
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'inline-block';
+            
+            setTimeout(() => {
+                // ランダムなスコア更新
+                watchedCurrencies.forEach(currency => {
+                    const change = Math.random() * 10 - 5;
+                    currency.score = Math.max(0, Math.min(100, currency.score + change));
+                    currency.score = Math.round(currency.score);
+                    
+                    // 価格もランダム更新
+                    const priceChange = (Math.random() * 0.1 - 0.05) * currency.price;
+                    currency.price += priceChange;
+                    
+                    // トレンド更新
+                    currency.trend = priceChange > 0 ? 'up' : 'down';
+                    currency.change = (priceChange / currency.price * 100).toFixed(1) + '%';
+                });
+                
+                renderCurrencies();
+                updateLastUpdated();
+                spinner.style.display = 'none';
+            }, 1000);
+        }
+
+        // エンターキーでの通貨追加
+        document.getElementById('currencyInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCurrency();
+            }
+        });
+
+        // 初期化
+        createMatrixRain();
+        renderCurrencies();
+        updateLastUpdated();
+
+        // 5秒ごとの自動更新
+        setInterval(simulateRealTimeUpdates, 5000);
+
+        // リサイズ対応
+        window.addEventListener('resize', () => {
+            const canvas = document.querySelector('#matrixRain canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body>
+</html>
