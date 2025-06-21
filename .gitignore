@@ -58,3 +58,5 @@ backend/env-vars.yaml
 
 # GitHub Secrets設定リスト（機密情報含む）
 GITHUB_SECRETS_LIST.md
+GCP_SA_KEY_FIXED.txt
+GCP_KEY_BASE64.txt

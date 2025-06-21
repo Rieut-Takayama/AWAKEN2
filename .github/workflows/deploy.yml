@@ -65,11 +65,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: 'Create credentials file'
+      run: |
+        echo "${{ secrets.GCP_SA_KEY_BASE64 }}" | tr -d '\n' | base64 -d > /tmp/gcp-key.json
+        echo "=== Checking JSON validity ==="
+        cat /tmp/gcp-key.json | jq . > /dev/null && echo "JSON is valid" || echo "JSON is invalid"
+    
     - id: 'auth'
       name: 'Authenticate to Google Cloud'
       uses: 'google-github-actions/auth@v2'
       with:
-        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+        credentials_json: '${{ fromJSON(secrets.GCP_SA_KEY_BASE64) }}'
     
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
