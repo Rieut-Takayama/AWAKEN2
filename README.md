@@ -2,6 +2,7 @@
 
 [![Deploy to Cloud Run](https://img.shields.io/badge/Deploy-Cloud%20Run-blue)](https://awaken2-backend-212213816719.asia-northeast1.run.app)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub Actions](https://github.com/Rieut-Takayama/AWAKEN2/actions/workflows/deploy.yml/badge.svg)](https://github.com/Rieut-Takayama/AWAKEN2/actions)
 
 ## 📊 概要
 
