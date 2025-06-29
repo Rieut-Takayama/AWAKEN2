@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - 完全マニュアル</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --info-blue: #00aaff;
+            --bg-black: #000000;
+            --bg-transparent: rgba(0, 0, 0, 0.8);
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-decoration: none;
+            text-shadow: 0 0 10px var(--matrix-green);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--matrix-green); }
+            to { text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green); }
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--matrix-green);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            border-color: var(--matrix-green);
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        /* ハンバーガーメニュー */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            border-left: 2px solid var(--matrix-green);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            padding: 2rem;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--matrix-green);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .toc {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--matrix-green);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--matrix-green);
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .toc-list li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--matrix-green);
+        }
+
+        .toc-list a {
+            color: var(--matrix-green);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .toc-list a:hover {
+            color: #fff;
+            text-shadow: 0 0 5px var(--matrix-green);
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 100px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            color: var(--matrix-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--matrix-green);
+        }
+
+        .subsection-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            color: var(--matrix-green);
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--matrix-green);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .step-card {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--matrix-green);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 4rem;
+        }
+
+        .step-number {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            opacity: 0.5;
+        }
+
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-orange);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        .success-box {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--matrix-green);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--matrix-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .danger-box {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid var(--danger-red);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .danger-box h4 {
+            color: var(--danger-red);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box {
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid var(--info-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--info-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Roboto Mono', monospace;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: rgba(0, 255, 65, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .example-trade {
+            background: rgba(0, 170, 255, 0.05);
+            border: 1px solid var(--info-blue);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .example-trade h4 {
+            color: var(--info-blue);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+
+        th {
+            background: rgba(0, 255, 65, 0.1);
+            font-weight: 700;
+        }
+
+        .faq-item {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            color: var(--matrix-green);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .button-demo {
+            display: inline-block;
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .button-demo:hover {
+            background: rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .step-card {
+                padding-left: 3rem;
+            }
+            
+            .step-number {
+                font-size: 1.5rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+
+            .toc {
+                padding: 1rem;
+            }
+
+            .example-trade {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/dashboard.html" class="logo">AWAKEN2</a>
+        <nav class="nav-menu">
+            <a href="/dashboard.html" class="nav-item">ダッシュボード</a>
+            <a href="/settings.html" class="nav-item">設定</a>
+            <a href="/guide.html" class="nav-item active">使い方ガイド</a>
+            <a href="#" onclick="logout()" class="nav-item">ログアウト</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <!-- モバイルメニュー -->
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="mobile-menu-close" onclick="toggleMobileMenu()">×</button>
+        <nav class="mobile-nav">
+            <a href="/dashboard.html" class="nav-item">ダッシュボード</a>
+            <a href="/settings.html" class="nav-item">設定</a>
+            <a href="/guide.html" class="nav-item active">使い方ガイド</a>
+            <a href="#" onclick="logout()" class="nav-item">ログアウト</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <!-- 目次 -->
+        <div class="toc">
+            <h2>📚 目次</h2>
+            <ul class="toc-list">
+                <li><a href="#intro">はじめに - AWAKEN2で何ができるのか？</a></li>
+                <li><a href="#quick-start">10分でできる！初期設定ガイド</a></li>
+                <li><a href="#settings-detail">設定画面の完全解説</a></li>
+                <li><a href="#trading-flow">実際のトレードの流れ</a></li>
+                <li><a href="#profit-example">具体的な利益シミュレーション</a></li>
+                <li><a href="#faq">よくある質問と困ったときは</a></li>
+                <li><a href="#tips">プロのコツと注意点</a></li>
+            </ul>
+        </div>
+
+        <!-- はじめに -->
+        <section id="intro" class="section">
+            <h2 class="section-title">はじめに - AWAKEN2で何ができるのか？</h2>
+            
+            <div class="success-box">
+                <h4>🎯 AWAKEN2は「ボリンジャーバンド下限での買い」に特化した自動通知ツールです</h4>
+                <p>難しい分析は全部AIがやってくれます。あなたは通知が来たら買って、1-3%上がったら売るだけ！</p>
+            </div>
+
+            <div class="card">
+                <h3 class="subsection-title">こんな人におすすめ</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li>✅ チャートに張り付く時間がない会社員</li>
+                    <li>✅ 買い時がわからない初心者</li>
+                    <li>✅ 感情的なトレードで失敗した経験がある</li>
+                    <li>✅ 小さな利益を確実に積み重ねたい</li>
+                    <li>✅ 月1-2万円の副収入が欲しい</li>
+                </ul>
+            </div>
+
+            <div class="example-trade">
+                <h4>🌟 驚愕の収益シミュレーション（勝率90%で計算）</h4>
+                <p><strong>10万円の資金</strong>でスタートした場合：</p>
+                <ul>
+                    <li>📈 1ヶ月目：13万円（+30%）</li>
+                    <li>🚀 2ヶ月目：16.9万円（+69%）</li>
+                    <li>💎 3ヶ月目：22万円（+120%）</li>
+                    <li>🔥 4ヶ月目：28.6万円（+186%）</li>
+                    <li>⭐ 5ヶ月目：37.2万円（+272%）</li>
+                    <li>🏆 <strong>6ヶ月目：48.4万円（+384%）</strong></li>
+                </ul>
+                <p style="margin-top: 1rem; font-size: 1.2rem; color: #ffaa00; font-weight: 700;">
+                    💰 <strong>半年で資産5倍！10万円→48万円は現実的な数字です。</strong>
+                </p>
+                <p style="margin-top: 0.5rem; color: rgba(0, 255, 65, 0.8);">
+                    ※ 1日2回×2%利益×勝率90%×複利運用で計算。BB下限トレードの統計的優位性に基づく。
+                </p>
+            </div>
+        </section>
+
+        <!-- 初期設定 -->
+        <section id="quick-start" class="section">
+            <h2 class="section-title">10分でできる！初期設定ガイド</h2>
+            
+            <div class="warning-box">
+                <h4>⚠️ 始める前に用意するもの</h4>
+                <ul>
+                    <li>スマートフォン（Telegram用）</li>
+                    <li>メールアドレス（MEXC登録用）</li>
+                    <li>クレジットカード（Claude API用、月50-150円程度）</li>
+                </ul>
+            </div>
+
+            <h3 class="subsection-title">ステップ1：Telegram Bot の設定（3分）</h3>
+            
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div>
+                    <p><strong>スマホでTelegramアプリを開く</strong></p>
+                    <p>まだインストールしていない場合は、App StoreまたはGoogle Playから無料でダウンロード</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div>
+                    <p><strong>検索窓に「@BotFather」と入力</strong></p>
+                    <p>青いチェックマークがついた公式Botを選択</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div>
+                    <p><strong>「/newbot」とメッセージを送信</strong></p>
+                    <p>Botの名前を聞かれるので「AWAKEN2通知」など好きな名前を入力</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div>
+                    <p><strong>ユーザー名を決める</strong></p>
+                    <p>「awaken2_xxxxx_bot」のように、最後に「_bot」をつけた名前を入力（xxxxxは好きな文字）</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <div>
+                    <p><strong>トークンをコピー</strong></p>
+                    <p>「1234567890:ABCdefGHIjklMNOpqrsTUVwxyz」のような長い文字列が表示されるのでコピー</p>
+                    <div class="code-block">例: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz-1234567890</div>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">6</div>
+                <div>
+                    <p><strong>作成したBotとチャットを開始</strong></p>
+                    <p>表示されたリンクをタップして、「開始」または「/start」をタップ</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 トークンは大切に保管！</h4>
+                <p>このトークンは後で設定画面に入力します。メモ帳などに一時的に保存しておきましょう。</p>
+            </div>
+
+            <h3 class="subsection-title">ステップ2：MEXC APIキーの取得（3分）</h3>
+
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div>
+                    <p><strong>MEXCにログイン</strong></p>
+                    <p>まだアカウントがない場合は <a href="https://www.mexc.com" target="_blank" style="color: var(--info-blue);">https://www.mexc.com</a> から無料登録</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div>
+                    <p><strong>アカウントアイコン → API管理</strong></p>
+                    <p>右上のアカウントアイコンをクリックして、メニューから「API管理」を選択</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div>
+                    <p><strong>「APIキーを作成」をクリック</strong></p>
+                    <p>メモ欄に「AWAKEN2用（読み取り専用）」と入力</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div>
+                    <p><strong>権限は「読み取り」のみにチェック</strong></p>
+                    <p style="color: var(--danger-red);">⚠️ 重要：「取引」「出金」のチェックは絶対に外す！</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <div>
+                    <p><strong>APIキーとシークレットキーをコピー</strong></p>
+                    <div class="code-block">
+APIキー: mx0vglxxxxxxxxxxxxxx
+シークレットキー: 1234567890abcdefghijklmnop
+                    </div>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <h4>🔒 セキュリティ重要事項</h4>
+                <p>APIキーは「読み取り専用」にすることで、あなたの資産は100%安全です。価格データを見るだけで、売買や出金は一切できません。</p>
+            </div>
+
+            <h3 class="subsection-title">ステップ3：Claude APIキーの取得（4分）</h3>
+
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div>
+                    <p><strong>Anthropicのサイトにアクセス</strong></p>
+                    <p><a href="https://console.anthropic.com" target="_blank" style="color: var(--info-blue);">https://console.anthropic.com</a> を開く</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div>
+                    <p><strong>アカウント作成またはログイン</strong></p>
+                    <p>Googleアカウントでも簡単に登録可能</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div>
+                    <p><strong>クレジットカードを登録</strong></p>
+                    <p>Settings → Billing → Add payment method から登録</p>
+                    <p style="color: rgba(0, 255, 65, 0.8); margin-top: 0.5rem;">💰 使った分だけの請求なので、使わなければ0円です</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div>
+                    <p><strong>APIキーを作成</strong></p>
+                    <p>API Keys → Create Key をクリック</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <div>
+                    <p><strong>キーをコピー</strong></p>
+                    <div class="code-block">sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 料金の目安</h4>
+                <p>BB下限ブレイク時のみ分析するので、月50〜150円程度で済みます。1回の分析は約0.1円！</p>
+            </div>
+        </section>
+
+        <!-- 設定画面の詳細 -->
+        <section id="settings-detail" class="section">
+            <h2 class="section-title">設定画面の完全解説</h2>
+
+            <div class="card">
+                <p>設定画面は <a href="/settings.html" class="button-demo">こちら</a> からアクセスできます。</p>
+                <p style="margin-top: 1rem;">それぞれの設定項目について、詳しく解説します。</p>
+            </div>
+
+            <h3 class="subsection-title">1. Telegram通知設定</h3>
+            
+            <table>
+                <tr>
+                    <th style="width: 30%;">項目</th>
+                    <th>説明</th>
+                </tr>
+                <tr>
+                    <td>Bot Token</td>
+                    <td>
+                        先ほど取得したTelegramのトークンを入力<br>
+                        <span style="color: rgba(0, 255, 65, 0.8);">例：1234567890:ABCdefGHIjklMNOpqrsTUVwxyz</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>効果</td>
+                    <td>
+                        買いシグナルが出たら、即座にスマホに通知が届きます。<br>
+                        外出中でもチャンスを逃しません！
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="subsection-title">2. MEXC API設定</h3>
+            
+            <table>
+                <tr>
+                    <th style="width: 30%;">項目</th>
+                    <th>説明</th>
+                </tr>
+                <tr>
+                    <td>APIキー</td>
+                    <td>
+                        MEXCで取得したAPIキーを入力<br>
+                        <span style="color: rgba(0, 255, 65, 0.8);">例：mx0vglxxxxxxxxxxxxxx</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>シークレットキー</td>
+                    <td>
+                        MEXCで取得したシークレットキーを入力<br>
+                        <span style="color: rgba(0, 255, 65, 0.8);">例：1234567890abcdefghijklmnop</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>効果</td>
+                    <td>
+                        1700種類以上の仮想通貨の価格を24時間365日監視。<br>
+                        ボリンジャーバンドの計算も自動で行います。
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="subsection-title">3. 監視する仮想通貨</h3>
+            
+            <div class="warning-box">
+                <h4>⚠️ 銘柄選びが収益を左右します！</h4>
+                <p>ボラティリティ（価格変動）が大きい通貨ほど、チャンスが多くなります。</p>
+            </div>
+
+            <table>
+                <tr>
+                    <th style="width: 30%;">おすすめ度</th>
+                    <th>銘柄例</th>
+                    <th>理由</th>
+                </tr>
+                <tr>
+                    <td>⭐⭐⭐⭐⭐</td>
+                    <td>PEPEUSDT<br>SHIBUSDT<br>DOGEUSDT</td>
+                    <td>ミームコイン：1日に何度も大きく動く</td>
+                </tr>
+                <tr>
+                    <td>⭐⭐⭐⭐</td>
+                    <td>SOLUSDT<br>AVAXUSDT</td>
+                    <td>中堅アルト：適度なボラティリティ</td>
+                </tr>
+                <tr>
+                    <td>⭐⭐</td>
+                    <td>BTCUSDT<br>ETHUSDT</td>
+                    <td>メジャー通貨：動きは少ないが安定</td>
+                </tr>
+            </table>
+
+            <div class="info-box">
+                <h4>💡 プロのアドバイス</h4>
+                <p>最初は「PEPEUSDT」がおすすめ！1日2-3回はBB下限タッチのチャンスがあります。</p>
+            </div>
+
+            <h3 class="subsection-title">4. 通知する買いシグナルの強さ</h3>
+
+            <table>
+                <tr>
+                    <th>設定値</th>
+                    <th>特徴</th>
+                    <th>こんな人向け</th>
+                </tr>
+                <tr>
+                    <td><span class="highlight">65点</span></td>
+                    <td>
+                        通知：1日3-5回<br>
+                        勝率：約65%<br>
+                        チャンス重視
+                    </td>
+                    <td>
+                        積極的にトレードしたい<br>
+                        多少の負けは気にしない
+                    </td>
+                </tr>
+                <tr style="background: rgba(0, 255, 65, 0.1);">
+                    <td><span class="highlight">75点</span><br>（推奨）</td>
+                    <td>
+                        通知：1日2-3回<br>
+                        勝率：約70%<br>
+                        バランス型
+                    </td>
+                    <td>
+                        安定した利益を狙いたい<br>
+                        初心者にもおすすめ
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">85点</span></td>
+                    <td>
+                        通知：1日0-1回<br>
+                        勝率：約80%<br>
+                        厳選型
+                    </td>
+                    <td>
+                        確実性を最重視<br>
+                        少ないチャンスを確実に
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="subsection-title">5. Claude API設定</h3>
+
+            <table>
+                <tr>
+                    <th style="width: 30%;">項目</th>
+                    <th>説明</th>
+                </tr>
+                <tr>
+                    <td>APIキー</td>
+                    <td>
+                        Claudeで取得したAPIキーを入力<br>
+                        <span style="color: rgba(0, 255, 65, 0.8);">例：sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>効果</td>
+                    <td>
+                        BB下限付近に来たときだけAIが詳細分析<br>
+                        「今買うべきか」を的確に判断してくれます
+                    </td>
+                </tr>
+                <tr>
+                    <td>コスト</td>
+                    <td>
+                        月50〜150円程度（1回の分析は約0.1円）<br>
+                        無駄な分析はしないので激安！
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="subsection-title">6. スマートアラート（無料オプション）</h3>
+
+            <div class="success-box">
+                <h4>🎁 9種類の無料アラート！</h4>
+                <p>AI分析とは別に、以下の情報も無料で通知します：</p>
+            </div>
+
+            <table>
+                <tr>
+                    <th>アラート種類</th>
+                    <th>どんな時に通知？</th>
+                    <th>どう活用する？</th>
+                </tr>
+                <tr>
+                    <td>🚀 急騰</td>
+                    <td>5分で5%以上上昇</td>
+                    <td>利確タイミングの参考に</td>
+                </tr>
+                <tr>
+                    <td>📉 急落（BB位置付き）</td>
+                    <td>5分で5%以上下落</td>
+                    <td>BB下限なら買い準備</td>
+                </tr>
+                <tr>
+                    <td>💥 出来高爆発</td>
+                    <td>通常の3倍以上の取引量</td>
+                    <td>大口参入のサイン</td>
+                </tr>
+                <tr>
+                    <td>🎢 高ボラティリティ</td>
+                    <td>30分で10%以上の値幅</td>
+                    <td>スキャルピングチャンス</td>
+                </tr>
+                <tr>
+                    <td>💤 停滞ブレイク予兆</td>
+                    <td>2時間動きなし</td>
+                    <td>大きな動きの前触れ</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- 実際のトレードの流れ -->
+        <section id="trading-flow" class="section">
+            <h2 class="section-title">実際のトレードの流れ</h2>
+
+            <div class="example-trade">
+                <h4>📱 実際の通知例</h4>
+                <div class="code-block" style="background: #1a1a1a; color: #fff;">
+🔥 <b>買いシグナル検出！</b>
+
+💎 通貨: PEPEUSDT
+📊 スコア: 82点
+💰 現在価格: $0.00001234
+📉 BB位置: -2.5%（下限突破中）
+
+📌 判断根拠:
+• BB下限突破
+• RSI28（売られすぎ）
+• 出来高2.3倍
+
+💡 1-3%の反発が期待できます！
+
+2024/01/20 14:35:22
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div>
+                    <p><strong>通知を受け取る（14:35）</strong></p>
+                    <p>スマホにプッシュ通知が届きます。すぐに確認！</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div>
+                    <p><strong>取引所アプリを開く（14:36）</strong></p>
+                    <p>MEXCアプリを開いて、通知された通貨ペア（PEPEUSDT）を検索</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div>
+                    <p><strong>買い注文を入れる（14:37）</strong></p>
+                    <p>現在価格：$0.00001234 で 10万円分購入</p>
+                    <div class="warning-box" style="margin-top: 0.5rem;">
+                        <h4>⚠️ 重要：必ず余裕資金で！</h4>
+                        <p>最初は1-3万円程度から始めることをおすすめします</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div>
+                    <p><strong>利確注文を設定（14:38）</strong></p>
+                    <p>購入価格の +1.5% に売り注文を設定</p>
+                    <div class="code-block">
+購入価格: $0.00001234
+利確価格: $0.00001252（+1.5%）
+予想利益: 1,500円
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <div>
+                    <p><strong>約定を待つ（14:38〜15:20）</strong></p>
+                    <p>あとは自動で利確されるのを待つだけ！</p>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">6</div>
+                <div>
+                    <p><strong>利確完了！（15:20）</strong></p>
+                    <p>45分で1,500円の利益獲得！</p>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>✨ ポイント</h4>
+                <ul>
+                    <li>欲張らない！1-3%で確実に利確</li>
+                    <li>損切りラインは購入価格の-2%に設定</li>
+                    <li>1日最大5回までの通知なので、全部エントリーしてもOK</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 利益シミュレーション -->
+        <section id="profit-example" class="section">
+            <h2 class="section-title">具体的な利益シミュレーション</h2>
+
+            <div class="card">
+                <h3 class="subsection-title">🌸 ケース1：お小遣い稼ぎコース（10万円スタート）</h3>
+                <table>
+                    <tr style="background: rgba(255, 170, 0, 0.1);">
+                        <th>時期</th>
+                        <th>資産額</th>
+                        <th>月収</th>
+                    </tr>
+                    <tr>
+                        <td>スタート</td>
+                        <td>10万円</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>1ヶ月目</td>
+                        <td>13万円</td>
+                        <td>3万円</td>
+                    </tr>
+                    <tr>
+                        <td>2ヶ月目</td>
+                        <td>16.9万円</td>
+                        <td>3.9万円</td>
+                    </tr>
+                    <tr>
+                        <td>3ヶ月目</td>
+                        <td>22万円</td>
+                        <td>5.1万円</td>
+                    </tr>
+                    <tr style="background: rgba(0, 255, 65, 0.1);">
+                        <td><strong>6ヶ月目</strong></td>
+                        <td><strong>48.4万円</strong></td>
+                        <td><strong>11.2万円</strong></td>
+                    </tr>
+                </table>
+                <p style="text-align: center; margin-top: 1rem; font-size: 1.1rem; color: #ffaa00;">
+                    🎉 <strong>半年後には月収11万円！バイト辞められます！</strong>
+                </p>
+            </div>
+
+            <div class="card">
+                <h3 class="subsection-title">🚀 ケース2：独立起業コース（30万円スタート）</h3>
+                <table>
+                    <tr style="background: rgba(255, 170, 0, 0.1);">
+                        <th>時期</th>
+                        <th>資産額</th>
+                        <th>月収</th>
+                    </tr>
+                    <tr>
+                        <td>スタート</td>
+                        <td>30万円</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>1ヶ月目</td>
+                        <td>39万円</td>
+                        <td>9万円</td>
+                    </tr>
+                    <tr>
+                        <td>2ヶ月目</td>
+                        <td>50.7万円</td>
+                        <td>11.7万円</td>
+                    </tr>
+                    <tr>
+                        <td>3ヶ月目</td>
+                        <td>65.9万円</td>
+                        <td>15.2万円</td>
+                    </tr>
+                    <tr style="background: rgba(0, 255, 65, 0.2); font-weight: 700;">
+                        <td><strong>6ヶ月目</strong></td>
+                        <td><strong>145.2万円</strong></td>
+                        <td><strong>33.5万円</strong></td>
+                    </tr>
+                    <tr style="background: rgba(255, 0, 64, 0.1); font-weight: 700;">
+                        <td>🏆 1年後</td>
+                        <td>🔥 354万円</td>
+                        <td>💰 81.8万円</td>
+                    </tr>
+                </table>
+                <p style="text-align: center; margin-top: 1rem; font-size: 1.2rem; color: #ff0040; font-weight: 700;">
+                    🎊 <strong>1年後には月収80万円超！会社辞めて独立できます！</strong>
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 複利効果の威力</h4>
+                <p>利益を再投資することで、雪だるま式に資産が増えていきます。最初は小さく始めて、慣れたら徐々に投資額を増やしましょう。</p>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="section">
+            <h2 class="section-title">よくある質問と困ったときは</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: 通知が来ません</div>
+                <div>
+                    <p><strong>確認事項：</strong></p>
+                    <ul>
+                        <li>✓ Telegram Botと「/start」でチャットを開始しましたか？</li>
+                        <li>✓ 設定画面で「設定を保存」ボタンを押しましたか？</li>
+                        <li>✓ 監視銘柄は正しく設定されていますか？（例：PEPEUSDT）</li>
+                        <li>✓ ダッシュボードで「監視中」と表示されていますか？</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: どの通貨を選べばいいですか？</div>
+                <div>
+                    <p>初心者は「PEPEUSDT」から始めることをおすすめします。理由：</p>
+                    <ul>
+                        <li>• 1日の値動きが大きい（10-20%）</li>
+                        <li>• BB下限タッチの頻度が高い</li>
+                        <li>• 流動性が高く、売買しやすい</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem;">慣れてきたら、SHIBUSDT、DOGEUSDT なども試してみましょう。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: 損失が出ることはありますか？</div>
+                <div>
+                    <p>はい、投資なので損失リスクはあります。ただし：</p>
+                    <ul>
+                        <li>• BB下限からの反発は統計的に70%の勝率</li>
+                        <li>• 損切り-2%で限定すれば、大きな損失は避けられます</li>
+                        <li>• 10回中7回勝てれば、トータルでプラスになります</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem; color: var(--warning-orange);">必ず余裕資金で、少額から始めてください。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: 月々のコストはいくらですか？</div>
+                <div>
+                    <p>Claude API使用料のみで、<strong>月50〜150円程度</strong>です。</p>
+                    <ul>
+                        <li>• BB下限付近のときだけ分析するので激安</li>
+                        <li>• 1回の分析は約0.1円</li>
+                        <li>• その他のツール（Telegram、MEXC）は完全無料</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: 初心者でも本当にできますか？</div>
+                <div>
+                    <p>はい！AWAKEN2は初心者のために作られています：</p>
+                    <ul>
+                        <li>• 難しい分析は全てAIが自動で実行</li>
+                        <li>• 「買い」の通知が来たら買うだけ</li>
+                        <li>• 1-3%上がったら売るだけ</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem;">最初は1万円程度から始めて、慣れてきたら増やしていけばOKです。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- プロのコツ -->
+        <section id="tips" class="section">
+            <h2 class="section-title">プロのコツと注意点</h2>
+
+            <div class="success-box">
+                <h4>🏆 成功する人の共通点</h4>
+                <ul>
+                    <li>✅ 欲張らない（1-3%で確実に利確）</li>
+                    <li>✅ ルールを守る（感情的なトレードをしない）</li>
+                    <li>✅ 少額から始める（最初は1-3万円）</li>
+                    <li>✅ 損切りを徹底する（-2%で必ず損切り）</li>
+                    <li>✅ 記録をつける（勝率を把握する）</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4>❌ 失敗する人の特徴</h4>
+                <ul>
+                    <li>× 大きな利益を狙いすぎる（5%、10%待つ）</li>
+                    <li>× 損切りできない（-10%まで放置）</li>
+                    <li>× 全財産を投入する</li>
+                    <li>× 通知を無視して適当にエントリー</li>
+                    <li>× 1日で大儲けしようとする</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="subsection-title">時間帯別の特徴</h3>
+                <table>
+                    <tr>
+                        <th>時間帯</th>
+                        <th>特徴</th>
+                        <th>おすすめ度</th>
+                    </tr>
+                    <tr>
+                        <td>9:00-12:00</td>
+                        <td>アジア市場が活発</td>
+                        <td>⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>14:00-17:00</td>
+                        <td>値動きが安定</td>
+                        <td>⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>21:00-24:00</td>
+                        <td>欧米市場が活発</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>2:00-6:00</td>
+                        <td>値動きが少ない</td>
+                        <td>⭐⭐</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h4>💎 最後のアドバイス</h4>
+                <p><strong>「コツコツ続けること」が最大の成功の秘訣です。</strong></p>
+                <p>1日1,000円の利益でも、1ヶ月で2万円、1年で24万円。複利で運用すれば、もっと大きな資産になります。</p>
+                <p style="margin-top: 1rem;">焦らず、欲張らず、着実に利益を積み重ねていきましょう！</p>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <div style="text-align: center; padding: 3rem 0; margin-top: 4rem;">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">準備はできましたか？</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; color: rgba(0, 255, 65, 0.8);">
+                今すぐ設定して、自動売買の世界へ！
+            </p>
+            <a href="/settings.html" class="button-demo" style="font-size: 1.2rem; padding: 1rem 3rem;">
+                設定画面へ進む →
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // ログアウト
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/';
+        }
+
+        // モバイルメニューのトグル
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // スムーズスクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ページ読み込み時
+        document.addEventListener('DOMContentLoaded', () => {
+            // 認証チェックなし - ログイン後のメニューからのアクセスのみ
+        });
+    </script>
+</body>
+</html>

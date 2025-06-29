@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>AWAKEN2 - 暗号通貨テクニカル分析通知ツール</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -141,41 +144,74 @@
 <body>
     <div class="login-container">
         <h1>AWAKEN2</h1>
+        <p style="text-align: center; margin-bottom: 1.5rem; color: rgba(0, 255, 65, 0.8); font-size: 0.9rem;">
+            AI仮想通貨分析ツール
+        </p>
         <form id="loginForm">
             <div class="form-group">
                 <input 
-                    type="password" 
-                    id="passkey" 
-                    placeholder="トライアルキーを入力"
+                    type="email" 
+                    id="email" 
+                    placeholder="メールアドレス"
                     required
                 >
             </div>
-            <button type="submit" id="submitBtn">
-                <span id="btnText">ログイン</span>
-            </button>
+            <div class="form-group">
+                <input 
+                    type="text" 
+                    id="passkey" 
+                    placeholder="パスキー: AWAKEN2"
+                    value="AWAKEN2"
+                    readonly
+                    required
+                >
+            </div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <button type="button" id="registerBtn" style="flex: 1; background: rgba(255, 170, 0, 0.2); border-color: #ffaa00; color: #ffaa00;">
+                    <span id="registerBtnText">🚀 新規登録</span>
+                </button>
+                <button type="button" id="loginBtn" style="flex: 1;">
+                    <span id="loginBtnText">📱 ログイン</span>
+                </button>
+            </div>
             <div id="error" class="error"></div>
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 255, 65, 0.2);">
+                <p style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem; margin-bottom: 0.5rem;">初めての方は「新規登録」をクリック</p>
+                <p style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem;">既に登録済みの方は「ログイン」をクリック</p>
+            </div>
         </form>
     </div>
 
     <script>
         const form = document.getElementById('loginForm');
+        const email = document.getElementById('email');
         const passkey = document.getElementById('passkey');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtnText = document.getElementById('registerBtnText');
+        const loginBtnText = document.getElementById('loginBtnText');
         const error = document.getElementById('error');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 新規登録ボタン
+        registerBtn.addEventListener('click', async () => {
             error.textContent = '';
             
+            const emailValue = email.value.trim();
             const key = passkey.value.trim();
-            if (!key) {
-                error.textContent = 'トライアルキーを入力してください';
+            
+            if (!emailValue || !key) {
+                error.textContent = 'メールアドレスとパスキーを入力してください';
+                return;
+            }
+            
+            if (key !== 'AWAKEN2') {
+                error.textContent = 'パスキーは「AWAKEN2」を入力してください';
                 return;
             }
 
-            submitBtn.disabled = true;
-            btnText.innerHTML = '<span class="loading"></span>';
+            registerBtn.disabled = true;
+            loginBtn.disabled = true;
+            registerBtnText.innerHTML = '<span class="loading"></span>';
 
             try {
                 const response = await fetch('/api/auth/trial', {
@@ -183,23 +219,79 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ passkey: key })
+                    body: JSON.stringify({ 
+                        passkey: key
+                    })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('trial_token', data.data.token);
+                    localStorage.setItem('userEmail', emailValue);
+                    alert('✅ 登録完了！ダッシュボードへ移動します。');
                     window.location.href = '/dashboard.html';
                 } else {
-                    error.textContent = data.error || 'ログインに失敗しました';
+                    error.textContent = data.message || '登録に失敗しました';
                 }
             } catch (err) {
                 error.textContent = 'サーバーとの通信に失敗しました';
             } finally {
-                submitBtn.disabled = false;
-                btnText.textContent = 'ログイン';
+                registerBtn.disabled = false;
+                loginBtn.disabled = false;
+                registerBtnText.innerHTML = '🚀 新規登録';
             }
+        });
+        
+        // ログインボタン
+        loginBtn.addEventListener('click', async () => {
+            error.textContent = '';
+            
+            const emailValue = email.value.trim();
+            const key = passkey.value.trim();
+            
+            if (!emailValue || !key) {
+                error.textContent = 'メールアドレスとパスキーを入力してください';
+                return;
+            }
+
+            registerBtn.disabled = true;
+            loginBtn.disabled = true;
+            loginBtnText.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/api/auth/trial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        passkey: key 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('trial_token', data.data.token);
+                    localStorage.setItem('userEmail', emailValue);
+                    window.location.href = '/dashboard.html';
+                } else {
+                    error.textContent = data.message || 'ログインに失敗しました。メールアドレスまたはパスキーを確認してください。';
+                }
+            } catch (err) {
+                error.textContent = 'サーバーとの通信に失敗しました';
+            } finally {
+                registerBtn.disabled = false;
+                loginBtn.disabled = false;
+                loginBtnText.innerHTML = '📱 ログイン';
+            }
+        });
+        
+        // Enterキーでログイン
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginBtn.click();
         });
     </script>
     <script src="/matrix-rain.js"></script>
