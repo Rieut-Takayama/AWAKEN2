@@ -532,7 +532,7 @@ app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
         
         return res.json({
             success: true,
-            data: filteredSymbols.slice(0, 100) // 最大100件まで返す
+            data: filteredSymbols.slice(0, 200) // 最大200件まで返す（検索があれば絞り込まれる）
         });
     } catch (error) {
         console.error('MEXC銘柄取得エラー:', error);
