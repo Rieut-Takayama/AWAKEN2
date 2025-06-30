@@ -1002,7 +1002,7 @@
             <div class="input-group" style="position: relative;">
                 <label for="symbolInput">銘柄を入力</label>
                 <input type="text" id="symbolInput" class="input-matrix" 
-                       placeholder="銘柄を検索 (例: BTC, ETH, OKM)"
+                       placeholder="銘柄を検索"
                        autocomplete="off">
                 <div id="symbolSuggestions" class="suggestions-dropdown" style="display: none;"></div>
             </div>
@@ -1434,12 +1434,7 @@
             notificationStatus.style.color = isEnabled ? '#00ff41' : '#ff0040';
         });
         
-        // 銘柄の候補リスト
-        const availableSymbols = [
-            'BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'SOL', 'MATIC', 'DOT', 'AVAX', 'LINK',
-            'DOGE', 'SHIB', 'UNI', 'LTC', 'FTM', 'ATOM', 'NEAR', 'ALGO', 'VET', 'FIL',
-            'ICP', 'HBAR', 'SAND', 'MANA', 'AXS', 'THETA', 'EGLD', 'XLM', 'TRX', 'ETC'
-        ];
+        // MEXC APIから銘柄を検索（旧availableSymbols配列は削除）
         
         // 選択された銘柄（最大3個）とその通知間隔
         let selectedSymbols = [
@@ -1450,12 +1445,14 @@
         const symbolInput = document.getElementById('symbolInput');
         const symbolSuggestions = document.getElementById('symbolSuggestions');
         
-        symbolInput.addEventListener('input', (e) => {
+        symbolInput.addEventListener('input', async (e) => {
             const value = e.target.value.toUpperCase();
             if (value.length > 0) {
-                const matches = availableSymbols.filter(symbol => 
-                    symbol.startsWith(value) && !selectedSymbols.some(s => s.symbol === symbol + '/USDT')
-                );
+                // MEXC APIから銘柄を検索
+                const searchResults = await searchMexcSymbols(value);
+                const matches = searchResults
+                    .filter(item => !selectedSymbols.some(s => s.symbol === item.symbol))
+                    .slice(0, 10); // 最大10件表示
                 
                 if (matches.length > 0) {
                     symbolSuggestions.innerHTML = matches.map(item => 
