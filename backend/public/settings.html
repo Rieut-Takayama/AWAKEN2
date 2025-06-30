@@ -1452,7 +1452,7 @@
                 const searchResults = await searchMexcSymbols(value);
                 const matches = searchResults
                     .filter(item => !selectedSymbols.some(s => s.symbol === item.symbol))
-                    .slice(0, 10); // 最大10件表示
+                    .slice(0, 20); // 最大20件表示
                 
                 if (matches.length > 0) {
                     symbolSuggestions.innerHTML = matches.map(item => 

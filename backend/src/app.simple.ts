@@ -533,10 +533,31 @@ app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
                        baseAssetLower.includes(searchLower) ||
                        baseAssetLower.startsWith(searchLower);
             });
+            
+            // 完全一致を優先してソート
+            filteredSymbols.sort((a: any, b: any) => {
+                const aBase = a.baseAsset.toLowerCase();
+                const bBase = b.baseAsset.toLowerCase();
+                const aExact = aBase === searchLower;
+                const bExact = bBase === searchLower;
+                
+                // 完全一致を最初に
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                
+                // 前方一致を次に
+                const aStarts = aBase.startsWith(searchLower);
+                const bStarts = bBase.startsWith(searchLower);
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+                
+                // それ以外はアルファベット順
+                return a.symbol.localeCompare(b.symbol);
+            });
+        } else {
+            // 検索がない場合はアルファベット順にソート
+            filteredSymbols.sort((a: any, b: any) => a.symbol.localeCompare(b.symbol));
         }
-        
-        // アルファベット順にソート
-        filteredSymbols.sort((a: any, b: any) => a.symbol.localeCompare(b.symbol));
         
         // 検索がある場合は全件返す、ない場合は200件まで
         const maxResults = search ? filteredSymbols.length : 200;
