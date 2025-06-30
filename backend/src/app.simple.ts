@@ -521,18 +521,27 @@ app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
         // 検索文字列がある場合はフィルタリング
         if (search && typeof search === 'string') {
             const searchLower = search.toLowerCase();
-            filteredSymbols = filteredSymbols.filter((symbol: any) => 
-                symbol.symbol.toLowerCase().includes(searchLower) ||
-                symbol.baseAsset.toLowerCase().includes(searchLower)
-            );
+            filteredSymbols = filteredSymbols.filter((symbol: any) => {
+                // symbolは "OKM/USDT" の形式
+                const symbolLower = symbol.symbol.toLowerCase();
+                const baseAssetLower = symbol.baseAsset.toLowerCase();
+                
+                // 検索文字列がシンボル名またはベース資産名に含まれるかチェック
+                return symbolLower.includes(searchLower) || 
+                       baseAssetLower.includes(searchLower) ||
+                       baseAssetLower.startsWith(searchLower);
+            });
         }
         
         // アルファベット順にソート
         filteredSymbols.sort((a: any, b: any) => a.symbol.localeCompare(b.symbol));
         
+        // 検索がある場合は全件返す、ない場合は200件まで
+        const maxResults = search ? filteredSymbols.length : 200;
+        
         return res.json({
             success: true,
-            data: filteredSymbols.slice(0, 200) // 最大200件まで返す（検索があれば絞り込まれる）
+            data: filteredSymbols.slice(0, maxResults)
         });
     } catch (error) {
         console.error('MEXC銘柄取得エラー:', error);
