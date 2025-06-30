@@ -1526,15 +1526,22 @@
         // MEXC APIから銘柄検索
         async function searchMexcSymbols(query) {
             try {
+                console.log('検索クエリ:', query);
                 const response = await fetch(`/api/mexc/symbols?search=${encodeURIComponent(query)}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
                 
+                console.log('APIレスポンスステータス:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('取得データ:', data);
                     return data.data || [];
+                } else {
+                    const errorData = await response.json();
+                    console.error('APIエラー:', errorData);
                 }
                 return [];
             } catch (error) {

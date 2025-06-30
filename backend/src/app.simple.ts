@@ -498,9 +498,11 @@ app.get('/api/realtime/analyze/:symbol', authMiddleware, async (req, res) => {
 app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
     try {
         const { search } = req.query;
+        console.log('検索クエリ:', search);
         
         // MEXC APIから全取引ペアを取得
         const allSymbols = await mexcService.getAllSymbols();
+        console.log('取得した全銘柄数:', allSymbols.length);
         
         if (!allSymbols || allSymbols.length === 0) {
             return res.json({
@@ -538,6 +540,8 @@ app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
         
         // 検索がある場合は全件返す、ない場合は200件まで
         const maxResults = search ? filteredSymbols.length : 200;
+        console.log('フィルタ後の銘柄数:', filteredSymbols.length);
+        console.log('返す銘柄数:', Math.min(filteredSymbols.length, maxResults));
         
         return res.json({
             success: true,
