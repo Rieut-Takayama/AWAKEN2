@@ -14,8 +14,8 @@ COPY . .
 # Build TypeScript
 RUN npm run build:tsc
 
-# Copy public files to dist
-RUN cp -r public dist/
+# Copy public files to dist (force rebuild)
+RUN echo "Cache bust: $(date)" && cp -r public dist/
 
 # Expose port
 EXPOSE 8080
