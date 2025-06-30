@@ -60,3 +60,20 @@ backend/env-vars.yaml
 GITHUB_SECRETS_LIST.md
 GCP_SA_KEY_FIXED.txt
 GCP_KEY_BASE64.txt
+
+# バックエンドのログディレクトリ
+backend/logs/
+backend/server.log
+
+# TypeScriptエラー分析
+scripts/ts-error/
+
+# テスト関連
+backend/tests/
+frontend/src/services/mock/
+
+# モックアップ
+mockups/
+
+# 一時的な隠しファイル
+.vq*

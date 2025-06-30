@@ -1,26 +1,40 @@
-// @MOCK_TO_API: 認証API統合完了 - 他のAPIは統合作業継続中
-
 // 認証API: 実API使用
 import { apiAuthService } from './api/auth.service';
-
-// 未統合API: モック使用
-import { mockAnalysisService } from './mock/analysis.service';
-import { mockWatchlistService } from './mock/watchlist.service';
-import { mockNotificationsService } from './mock/notifications.service';
-
-// @MOCK_LOGIC: 未統合API用のモック切り替えロジック
-const USE_MOCK = process.env.NODE_ENV === 'development' || !process.env.REACT_APP_API_URL;
 
 // 認証API: 実API統合完了
 export const authService = apiAuthService;
 
-// 未統合API: モック継続使用
-export const analysisService = USE_MOCK ? mockAnalysisService : mockAnalysisService; // TODO: apiAnalysisServiceに置き換え
-export const watchlistService = USE_MOCK ? mockWatchlistService : mockWatchlistService; // TODO: apiWatchlistServiceに置き換え
-export const notificationsService = USE_MOCK ? mockNotificationsService : mockNotificationsService; // TODO: apiNotificationsServiceに置き換え
+// 他のサービスは削除されたため、必要なメソッドを持つスタブ実装を提供
+// TODO: 必要に応じて実際のAPIサービスまたはモックサービスを再実装
 
-// @MOCK_TO_API: API実装時にこの警告は削除
-if (USE_MOCK) {
-  console.warn('🔧 Application is running with MOCK services');
-  console.warn('🔧 All data is simulated and will not persist');
-}
+export const analysisService = {
+  getRealtimeData: async () => {
+    console.warn('analysisService.getRealtimeData is not implemented');
+    return [];
+  }
+};
+
+export const watchlistService = {
+  // 必要に応じてメソッドを追加
+};
+
+export const notificationsService = {
+  getSettings: async () => {
+    console.warn('notificationsService.getSettings is not implemented');
+    return {
+      scoreThreshold: 75,
+      interval: 60,
+      methods: [],
+      telegramChatId: '',
+      enabled: false
+    };
+  },
+  sendTestNotification: async (_request: any) => {
+    console.warn('notificationsService.sendTestNotification is not implemented');
+    return { success: false, message: 'Not implemented' };
+  },
+  updateSettings: async (_settings: any) => {
+    console.warn('notificationsService.updateSettings is not implemented');
+    return { success: false, message: 'Not implemented' };
+  }
+};

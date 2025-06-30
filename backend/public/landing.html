@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - AI仮想通貨投資分析ツール</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --bg-black: #000000;
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', monospace;
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* ヒーローセクション */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: matrix-move 20s linear infinite;
+        }
+
+        @keyframes matrix-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .logo-large {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-shadow: 0 0 30px var(--matrix-green);
+            margin-bottom: 1rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 30px var(--matrix-green); }
+            to { text-shadow: 0 0 50px var(--matrix-green), 0 0 70px var(--matrix-green); }
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--matrix-green);
+            color: #000;
+            border: 2px solid var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--matrix-green);
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.8);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--matrix-green);
+            border: 2px solid var(--matrix-green);
+        }
+
+        .btn-secondary:hover {
+            background: var(--matrix-green);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        /* フィーチャーセクション */
+        .section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            text-align: center;
+            color: var(--matrix-green);
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px var(--matrix-green);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+            border-color: var(--matrix-green);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            color: var(--matrix-green);
+            margin-bottom: 1rem;
+        }
+
+        .feature-desc {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* 使い方セクション */
+        .steps {
+            counter-reset: step-counter;
+        }
+
+        .step {
+            position: relative;
+            padding-left: 4rem;
+            margin-bottom: 2rem;
+            counter-increment: step-counter;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3rem;
+            height: 3rem;
+            background: var(--matrix-green);
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            color: var(--matrix-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* プライシング */
+        .pricing-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .price-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .price-card.featured {
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            transform: scale(1.05);
+        }
+
+        .price-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--matrix-green);
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            color: var(--matrix-green);
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .price-unit {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .plan-features li {
+            padding: 0.5rem 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .plan-features li::before {
+            content: "✓ ";
+            color: var(--matrix-green);
+            font-weight: bold;
+        }
+
+        /* フッター */
+        .footer {
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .logo-large {
+                font-size: 3rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヒーローセクション -->
+    <section class="hero">
+        <div class="matrix-bg"></div>
+        <div class="hero-content">
+            <h1 class="logo-large">AWAKEN2</h1>
+            <p class="tagline">
+                AIが24時間365日、仮想通貨の買い時を分析<br>
+                チャンスを逃さずTelegramで即座にお知らせ
+            </p>
+            <div class="cta-buttons">
+                <a href="/login" class="btn btn-primary">
+                    <span>🚀</span> 今すぐ使う
+                </a>
+                <a href="#how-it-works" class="btn btn-secondary">
+                    <span>📖</span> 使い方を見る
+                </a>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+                トライアルキー: <code style="color: var(--matrix-green);">AWAKEN2</code>
+            </p>
+        </div>
+    </section>
+
+    <!-- 特徴セクション -->
+    <section class="section">
+        <h2 class="section-title">なぜAWAKEN2？</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI総合分析</h3>
+                <p class="feature-desc">
+                    RSI、MACD、ボリンジャーバンドを総合的に分析。
+                    複雑な指標を0〜100点のシンプルなスコアで表示。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">リアルタイム監視</h3>
+                <p class="feature-desc">
+                    24時間365日、選択した仮想通貨を自動監視。
+                    5分足から日足まで、短期トレード向けの配分で分析。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3 class="feature-title">即座に通知</h3>
+                <p class="feature-desc">
+                    買い時を検知したらTelegramで即通知。
+                    外出中でもチャンスを逃しません。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3 class="feature-title">個別設定</h3>
+                <p class="feature-desc">
+                    銘柄ごとに通知間隔を設定可能。
+                    あなたの投資スタイルに合わせてカスタマイズ。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">詳細レポート</h3>
+                <p class="feature-desc">
+                    通知履歴から詳細なAI分析を確認。
+                    なぜ買い時なのか、根拠を明確に提示。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">安全設計</h3>
+                <p class="feature-desc">
+                    APIキーは読み取り専用で設定。
+                    資産の移動はできない安全設計。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使い方セクション -->
+    <section class="section" id="how-it-works">
+        <h2 class="section-title">かんたん3ステップ</h2>
+        <div class="steps">
+            <div class="step">
+                <h3 class="step-title">ログイン</h3>
+                <p class="step-desc">
+                    トライアルキー「TRIAL2025」または「AWAKEN2」でログイン。
+                    メールアドレスの登録は不要です。
+                </p>
+            </div>
+            <div class="step">
+                <h3 class="step-title">API設定</h3>
+                <p class="step-desc">
+                    MEXCのAPIキー（読み取り専用）を設定。
+                    Telegramボットを作成して連携。詳しい手順はアプリ内で解説。
+                </p>
+            </div>
+            <div class="step">
+                <h3 class="step-title">監視開始</h3>
+                <p class="step-desc">
+                    最大3つの仮想通貨を選択して監視開始。
+                    買い時を検知したら即座にTelegramでお知らせ。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 料金プラン -->
+    <section class="section" style="background: rgba(0, 255, 65, 0.02);">
+        <h2 class="section-title">料金プラン</h2>
+        <div class="pricing-table">
+            <div class="price-card">
+                <h3 class="plan-name">トライアル</h3>
+                <div class="price">
+                    無料
+                    <span class="price-unit">/ 永久</span>
+                </div>
+                <ul class="plan-features">
+                    <li>最大3銘柄まで監視</li>
+                    <li>5分〜240分の通知間隔</li>
+                    <li>基本的なAI分析</li>
+                    <li>Telegram通知</li>
+                    <li>セルフセットアップ</li>
+                </ul>
+                <a href="/login" class="btn btn-secondary" style="width: 100%;">
+                    今すぐ始める
+                </a>
+            </div>
+            
+            <div class="price-card featured">
+                <h3 class="plan-name">プロ（準備中）</h3>
+                <div class="price">
+                    ¥2,980
+                    <span class="price-unit">/ 月</span>
+                </div>
+                <ul class="plan-features">
+                    <li>最大10銘柄まで監視</li>
+                    <li>1分〜の高速通知</li>
+                    <li>高度なAI分析＋予測</li>
+                    <li>複数チャンネル通知</li>
+                    <li>優先サポート</li>
+                    <li>APIキー自動管理</li>
+                </ul>
+                <button class="btn btn-primary" style="width: 100%;" disabled>
+                    近日公開
+                </button>
+            </div>
+            
+            <div class="price-card">
+                <h3 class="plan-name">エンタープライズ</h3>
+                <div class="price">
+                    お問い合わせ
+                </div>
+                <ul class="plan-features">
+                    <li>無制限の銘柄監視</li>
+                    <li>カスタムアルゴリズム</li>
+                    <li>API連携</li>
+                    <li>専用サーバー</li>
+                    <li>24時間サポート</li>
+                    <li>自動売買連携</li>
+                </ul>
+                <button class="btn btn-secondary" style="width: 100%;" disabled>
+                    お問い合わせ
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="text-align: center; padding: 6rem 2rem;">
+        <h2 class="section-title">今すぐ始めよう</h2>
+        <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+            AIの力で、仮想通貨投資をもっとスマートに
+        </p>
+        <div class="cta-buttons">
+            <a href="/login" class="btn btn-primary">
+                <span>🚀</span> 今すぐ使う
+            </a>
+            <a href="https://github.com/YOUR_USERNAME/awaken2" class="btn btn-secondary">
+                <span>💻</span> ソースコード
+            </a>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <p>&copy; 2025 AWAKEN2. All rights reserved.</p>
+        <p style="margin-top: 1rem;">
+            <a href="#" style="color: var(--matrix-green); text-decoration: none; margin: 0 1rem;">利用規約</a>
+            <a href="#" style="color: var(--matrix-green); text-decoration: none; margin: 0 1rem;">プライバシーポリシー</a>
+            <a href="https://github.com/YOUR_USERNAME/awaken2" style="color: var(--matrix-green); text-decoration: none; margin: 0 1rem;">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

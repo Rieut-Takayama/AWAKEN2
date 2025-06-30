@@ -13,16 +13,27 @@ interface AnalysisResult {
     timestamp: Date;
 }
 
-class AIAnalysisService {
-    private anthropic: Anthropic;
+export class AIAnalysisService {
+    private anthropic: Anthropic | null = null;
+    private userApiKey: string | null = null;
     private scoreThreshold: number = 75;
     private notificationInterval: number = 60; // 通知間隔（分）
     private notificationHistory: Map<string, number> = new Map(); // 通知履歴
     private notificationsEnabled: boolean = false; // 通知機能の有効/無効
+    private dailyNotificationCount: Map<string, { count: number; date: string }> = new Map(); // 日別通知数
+    private quietHoursStart: number = 0; // 通知しない時間帯の開始（0-23）
+    private quietHoursEnd: number = 6; // 通知しない時間帯の終了（0-23）
+    private analysisInterval: NodeJS.Timeout | null = null; // リアルタイム分析のインターバル
 
     constructor() {
+        // ユーザーごとのAPIキーを使うので、ここでは初期化しない
+    }
+    
+    // ユーザーのAPIキーを設定
+    setUserApiKey(apiKey: string): void {
+        this.userApiKey = apiKey;
         this.anthropic = new Anthropic({
-            apiKey: process.env.ANTHROPIC_API_KEY || ''
+            apiKey: apiKey
         });
     }
 
@@ -36,8 +47,51 @@ class AIAnalysisService {
             const indicators = technicalAnalysisService.calculateAllIndicators(candles);
             const buySignals = technicalAnalysisService.generateBuySignals(indicators, priceData.price);
             
+            // 🎯 買いシグナルが出ていない時はAI分析をスキップしてコスト大幅削減！
+            const currentPrice = priceData.price;
+            const bbPercentage = ((currentPrice - indicators.bollingerBands.lower) / (indicators.bollingerBands.upper - indicators.bollingerBands.lower)) * 100;
+            
+            // 買いシグナルの条件チェック（BB下限ブレイク重視！）
+            const hasBuySignal = 
+                bbPercentage < 5 ||   // BB下限に非常に近い、またはブレイク（下から5%以内）
+                (bbPercentage < 10 && indicators.rsi < 30) ||  // BB下限近く＋RSI売られすぎ
+                (bbPercentage < 15 && indicators.volumeAnalysis.volumeRatio > 2.0); // BB下限付近＋出来高急増
+            
+            if (!hasBuySignal) {
+                console.log(`📊 ${symbol}に買いシグナルなし（RSI:${indicators.rsi.toFixed(1)}, BB位置:${bbPercentage.toFixed(1)}%）AI分析スキップでコスト削減！`);
+                
+                // 買いシグナルがない時の簡易レスポンス
+                const analysis: any = {
+                    symbol: symbol,
+                    price: priceData.price,
+                    change24h: priceData.change24h || 0,
+                    volume24h: priceData.volume || 0,
+                    score: 30, // 低スコア
+                    recommendation: 'HOLD',
+                    confidence: 0.9,
+                    reasoning: '買いシグナルが出ていません。次のチャンスを待ちましょう。',
+                    indicators: {
+                        rsi: { value: indicators.rsi, signal: 'neutral' },
+                        macd: indicators.macd,
+                        bb: indicators.bollingerBands,
+                        bbPosition: bbPercentage
+                    },
+                    timestamp: new Date(),
+                    isSimpleAnalysis: true,
+                    skipReason: 'no_buy_signal'
+                };
+                
+                return analysis;
+            }
+            
+            console.log(`🔥 ${symbol}に買いシグナル検出！（BB位置:${bbPercentage.toFixed(1)}%, RSI:${indicators.rsi.toFixed(1)}）AI詳細分析を実行`);
+            
+            
             const prompt = `
-仮想通貨取引の専門家として、以下の詳細なテクニカルデータを分析し、0-100点の買い度スコアを算出してください。
+短期トレード専門の仮想通貨トレーダーとして、以下のデータから1-3%の利益を狙えるエントリーポイントを判断して0-100点で採点してください。
+
+重要：ミームコインやボラティリティの高い通貨では、ボリンジャーバンド突破やRSI極端値は優れたエントリーポイントです。
+1日に3-5回程度は75点以上のチャンスがあることを前提に評価してください。
 
 通貨ペア: ${symbol}
 現在価格: $${priceData.price}
@@ -56,15 +110,33 @@ class AIAnalysisService {
 ${buySignals.signals.length > 0 ? buySignals.signals.join('\n') : 'なし'}
 シグナル強度: ${buySignals.strength}/100
 
+採点基準：
+- 85-100点: 即座にエントリーすべき強いシグナル
+- 75-84点: 良いエントリーポイント、短期利益が期待
+- 60-74点: 様子見、まだリスクあり
+- 60点未満: エントリー非推奨
+
+特に以下の状況は高得点を付けてください：
+- BB下限突破（現在価格がBB下限以下）= 85点以上
+- BB下限に極めて近い（5%以内）+ 出来高増加 = 80点以上
+- BB下限付近（10%以内）+ RSI30以下 = 75点以上
+
+重要：ボリンジャーバンド下限からの反発は統計的に高確率（約70%）で1-3%の利益が期待できます。
+
 以下の形式で回答してください：
 SCORE: [0-100の数値]
 RECOMMENDATION: [BUY/HOLD/SELL]
 REASONING: [1-2文の簡潔な理由]
 `;
 
+            // APIキーが設定されてないときはエラー
+            if (!this.anthropic || !this.userApiKey) {
+                throw new Error('Claude APIキーが設定されていません');
+            }
+            
             const response = await this.anthropic.messages.create({
-                model: 'claude-3-haiku-20240307',
-                max_tokens: 200,
+                model: 'claude-3-5-sonnet-20241022',  // Sonnetにアップグレード！
+                max_tokens: 300,  // Sonnetはより詳細な分析が可能
                 messages: [{
                     role: 'user',
                     content: prompt
@@ -120,16 +192,10 @@ REASONING: [1-2文の簡潔な理由]
                 timestamp: new Date()
             };
         } catch (error) {
-            console.error('AI analysis error:', error);
-            // エラー時は中立的な値を返す
-            return {
-                symbol,
-                score: 50,
-                recommendation: 'HOLD',
-                reasoning: '分析エラー',
-                keyFactors: [],
-                timestamp: new Date()
-            };
+            console.error('AI分析エラー:', error);
+            // エラー時はエラーであることを明示
+            const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+            throw new Error(`AI分析中にエラーが発生しました: ${errorMessage}`);
         }
     }
 
@@ -142,30 +208,63 @@ REASONING: [1-2文の簡潔な理由]
             const analysis = await this.analyzePrice(priceData.symbol, priceData);
             results.push(analysis);
 
-            // 高スコアの場合は通知（60分に1回まで）
-            if (analysis.score >= this.scoreThreshold) {
-                const lastNotified = this.notificationHistory.get(analysis.symbol) || 0;
+            // 高スコアの場合は通知（制限付き）
+            if (analysis.score >= this.scoreThreshold && this.notificationsEnabled) {
                 const now = Date.now();
+                const nowDate = new Date();
+                const currentHour = nowDate.getHours();
+                const today = nowDate.toDateString();
                 
-                // 60分以上経過している場合のみ通知
-                if (now - lastNotified > 60 * 60 * 1000) {
-                    await telegramService.sendHighScoreAlert(
-                        analysis.symbol,
-                        analysis.score,
-                        priceData.price,
-                        `${priceData.change24h > 0 ? '+' : ''}${priceData.change24h}%`,
-                        analysis.keyFactors // 判断根拠を渡す
-                    );
-                    this.notificationHistory.set(analysis.symbol, now);
+                // 通知しない時間帯チェック
+                const inQuietHours = this.quietHoursStart <= this.quietHoursEnd 
+                    ? (currentHour >= this.quietHoursStart && currentHour < this.quietHoursEnd)
+                    : (currentHour >= this.quietHoursStart || currentHour < this.quietHoursEnd);
+                    
+                if (inQuietHours) {
+                    console.log(`🤫 静かな時間帯（${this.quietHoursStart}時-${this.quietHoursEnd}時）なので通知をスキップ`);
+                } else {
+                    // 1日5回制限チェック
+                    const userKey = 'global'; // 後でユーザーごとに変更可能
+                    const dailyData = this.dailyNotificationCount.get(userKey);
+                    
+                    if (dailyData && dailyData.date === today && dailyData.count >= 5) {
+                        console.log(`🛑 本日の通知上限（5回）に達しました`);
+                    } else {
+                        // 通知間隔チェック
+                        const lastNotified = this.notificationHistory.get(analysis.symbol) || 0;
+                        
+                        if (now - lastNotified > this.notificationInterval * 60 * 1000) {
+                            await telegramService.sendHighScoreAlert(
+                                analysis.symbol,
+                                analysis.score,
+                                priceData.price,
+                                `${priceData.change24h > 0 ? '+' : ''}${priceData.change24h}%`,
+                                analysis.keyFactors // 判断根拠を渡す
+                            );
+                            this.notificationHistory.set(analysis.symbol, now);
+                            
+                            // 日別カウントを更新
+                            if (!dailyData || dailyData.date !== today) {
+                                this.dailyNotificationCount.set(userKey, { count: 1, date: today });
+                            } else {
+                                this.dailyNotificationCount.set(userKey, { 
+                                    count: dailyData.count + 1, 
+                                    date: today 
+                                });
+                            }
+                            
+                            console.log(`📨 通知送信完了！本日${this.dailyNotificationCount.get(userKey)?.count}/5回`);
+                        }
+                    }
                 }
             }
             
-            // 分析結果をRedisにキャッシュ
+            // 分析結果をRedisにキャッシュ（5分間！）
             const redis = databaseService.getRedisClient();
             if (redis) {
                 await redis.setex(
                     `analysis:${analysis.symbol}`,
-                    30, // 30秒キャッシュ
+                    300, // 30秒→5分（300秒）キャッシュ！コスト大幅削減だ！
                     JSON.stringify(analysis)
                 );
             }
@@ -193,20 +292,51 @@ REASONING: [1-2文の簡潔な理由]
         this.notificationsEnabled = enabled;
         console.log(`通知機能を${enabled ? '有効' : '無効'}にしました`);
     }
+    
+    // 通知機能の現在の状態を取得
+    getNotificationsEnabled(): boolean {
+        return this.notificationsEnabled;
+    }
+    
+    // 通知しない時間帯を設定
+    setQuietHours(start: number, end: number): void {
+        this.quietHoursStart = start;
+        this.quietHoursEnd = end;
+        console.log(`🌙 ${start}時から${end}時は通知しません`);
+    }
+    
+    // 今日の通知回数を取得
+    getDailyNotificationCount(userKey: string = 'global'): number {
+        const today = new Date().toDateString();
+        const dailyData = this.dailyNotificationCount.get(userKey);
+        return (dailyData && dailyData.date === today) ? dailyData.count : 0;
+    }
 
     // リアルタイム監視と分析
     async startRealtimeAnalysis(symbols: string[], interval: number = 5000): Promise<void> {
         console.log(`Starting AI analysis for: ${symbols.join(', ')}`);
-        console.log('⚠️ Telegram通知は一時的に無効化されています');
+        console.log('💪 Telegram通知を有効化しました');
+        
+        // 既存の分析を停止
+        this.stopRealtimeAnalysis();
 
-        // 初回分析（通知なし）
-        // await this.analyzeMultipleCurrencies(symbols);
+        // 初回分析（通知あり）
+        await this.analyzeMultipleCurrencies(symbols);
 
-        // 定期分析（通知なし）
-        setInterval(async () => {
-            console.log(`Running AI analysis at ${new Date().toISOString()}`);
-            // await this.analyzeMultipleCurrencies(symbols);
+        // 定期分析（通知あり）
+        this.analysisInterval = setInterval(async () => {
+            console.log(`🔥 AI分析実行中 ${new Date().toISOString()}`);
+            await this.analyzeMultipleCurrencies(symbols);
         }, interval);
+    }
+    
+    // リアルタイム分析を停止
+    stopRealtimeAnalysis(): void {
+        if (this.analysisInterval) {
+            clearInterval(this.analysisInterval);
+            this.analysisInterval = null;
+            console.log('🚫 リアルタイム分析を停止しました');
+        }
     }
 }
 

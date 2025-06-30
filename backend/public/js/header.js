@@ -1,0 +1,213 @@
+// 共通ヘッダーコンポーネント
+function createHeader() {
+    const currentPath = window.location.pathname;
+    const isLoggedIn = localStorage.getItem('token');
+    
+    // ログインページの場合はヘッダーを表示しない
+    if (currentPath === '/' || currentPath === '/login' || currentPath === '/index.html') {
+        return '';
+    }
+    
+    return `
+        <header class="header">
+            <a href="/dashboard.html" class="logo">AWAKEN2</a>
+            
+            <div class="header-info">
+                <nav class="nav-menu">
+                    <a href="/dashboard.html" class="nav-item ${currentPath.includes('dashboard') ? 'active' : ''}">
+                        ダッシュボード
+                    </a>
+                    <a href="/settings.html" class="nav-item ${currentPath.includes('settings') ? 'active' : ''}">
+                        設定
+                    </a>
+                    <a href="/guide.html" class="nav-item ${currentPath.includes('guide') ? 'active' : ''}">
+                        ガイド
+                    </a>
+                    <a href="/faq.html" class="nav-item ${currentPath.includes('faq') ? 'active' : ''}">
+                        FAQ
+                    </a>
+                </nav>
+                
+                ${isLoggedIn ? `
+                    <button class="logout-btn" onclick="logout()">
+                        ログアウト
+                    </button>
+                ` : ''}
+            </div>
+            
+            <!-- モバイル用ハンバーガーメニュー -->
+            <div class="hamburger-menu" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </header>
+        
+        <!-- モバイルメニュー -->
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="/dashboard.html" class="mobile-nav-item ${currentPath.includes('dashboard') ? 'active' : ''}">
+                ダッシュボード
+            </a>
+            <a href="/settings.html" class="mobile-nav-item ${currentPath.includes('settings') ? 'active' : ''}">
+                設定
+            </a>
+            <a href="/guide.html" class="mobile-nav-item ${currentPath.includes('guide') ? 'active' : ''}">
+                ガイド
+            </a>
+            <a href="/faq.html" class="mobile-nav-item ${currentPath.includes('faq') ? 'active' : ''}">
+                FAQ
+            </a>
+            ${isLoggedIn ? `
+                <button class="mobile-logout-btn" onclick="logout()">
+                    ログアウト
+                </button>
+            ` : ''}
+        </div>
+    `;
+}
+
+// ログアウト関数
+function logout() {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+}
+
+// モバイルメニューのトグル
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const hamburger = document.querySelector('.hamburger-menu');
+    menu.classList.toggle('active');
+    hamburger.classList.toggle('active');
+}
+
+// ヘッダーのスタイルを追加
+const headerStyles = `
+    <style>
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .hamburger-menu span {
+            width: 25px;
+            height: 3px;
+            background: var(--matrix-green, #00ff41);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-6px, 6px);
+        }
+        
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-6px, -6px);
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 2px solid var(--matrix-green, #00ff41);
+            z-index: 999;
+            padding: 1rem;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.active {
+            transform: translateY(0);
+        }
+        
+        .mobile-nav-item {
+            display: block;
+            color: var(--matrix-green, #00ff41);
+            text-decoration: none;
+            padding: 0.8rem;
+            margin: 0.3rem 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav-item:hover,
+        .mobile-nav-item.active {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--matrix-green, #00ff41);
+        }
+        
+        .mobile-logout-btn {
+            width: 100%;
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-green, #00ff41);
+            border: 1px solid var(--matrix-green, #00ff41);
+            padding: 0.8rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-logout-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none !important;
+            }
+            
+            .logout-btn {
+                display: none !important;
+            }
+            
+            .hamburger-menu {
+                display: flex !important;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .header {
+                padding: 1rem !important;
+            }
+            
+            .header-info {
+                gap: 1rem !important;
+            }
+        }
+    </style>
+`;
+
+// DOMContentLoadedイベントでヘッダーを挿入
+document.addEventListener('DOMContentLoaded', function() {
+    // スタイルを追加
+    if (!document.querySelector('#header-styles')) {
+        const styleElement = document.createElement('div');
+        styleElement.id = 'header-styles';
+        styleElement.innerHTML = headerStyles;
+        document.head.appendChild(styleElement);
+    }
+    
+    // ヘッダーを挿入
+    const headerContainer = document.querySelector('.header');
+    if (headerContainer && !headerContainer.innerHTML.includes('nav-menu')) {
+        headerContainer.outerHTML = createHeader();
+    } else if (!document.querySelector('.header')) {
+        // ヘッダーがない場合は body の最初に挿入
+        document.body.insertAdjacentHTML('afterbegin', createHeader());
+    }
+});

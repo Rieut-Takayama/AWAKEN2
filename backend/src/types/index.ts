@@ -48,6 +48,18 @@ export interface ApiResponse<T> {
 // ===========================================
 
 export interface TrialAuthRequest {
+  email: string;
+  passkey: string;
+  isNewUser?: boolean;
+}
+
+export interface LoginRequest {
+  email: string;
+  passkey: string;
+}
+
+export interface RegisterRequest {
+  email: string;
   passkey: string;
 }
 

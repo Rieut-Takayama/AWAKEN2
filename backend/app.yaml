@@ -1,0 +1,24 @@
+runtime: nodejs20
+env: standard
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 2
+  target_cpu_utilization: 0.8
+
+env_variables:
+  NODE_ENV: "production"
+  PORT: "8080"
+  CORS_ORIGIN: "https://awaken2.com"
+  ENCRYPTION_KEY: "awaken2-secure-key-32bytes-2025!"
+
+handlers:
+- url: /public
+  static_dir: public
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+instance_class: F1

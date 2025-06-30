@@ -60,7 +60,10 @@ export const useAuth = () => {
   const login = async (passkey: string): Promise<boolean> => {
     try {
       // 実APIでトライアル認証
-      const response = await authService.trialLogin({ passkey });
+      const response = await authService.trialLogin({ 
+        email: '', // トライアル認証では不要
+        passkey 
+      });
       
       if (response.success) {
         setAuthState({

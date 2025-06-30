@@ -1,29 +1,28 @@
-#!/usr/bin/env node
-
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// パス設定
-const rootDir = path.resolve(__dirname, '../..');
+// タスク管理
 const tasksPath = path.join(__dirname, 'tasks.json');
-const errorsPath = path.join(__dirname, 'logs/errors_latest.json');
+const logsDir = path.join(__dirname, 'logs');
 
-// tasks.jsonの初期化
-function initializeTasks() {
-  if (!fs.existsSync(tasksPath)) {
-    const initialTasks = {
-      updated: new Date().toLocaleString(),
-      working: {}
-    };
-    fs.writeFileSync(tasksPath, JSON.stringify(initialTasks, null, 2));
-  }
+// ローカル時間でのタイムスタンプ生成
+const getLocalTimestamp = () => new Date().toLocaleString();
+
+// 初期化
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// tasks.jsonの25分ルールチェック
-function checkTasksStatus() {
-  if (!fs.existsSync(tasksPath)) return;
-  
+if (!fs.existsSync(tasksPath)) {
+  fs.writeFileSync(tasksPath, JSON.stringify({
+    updated: getLocalTimestamp(),
+    working: {}
+  }, null, 2));
+}
+
+// tasks.json読み込みと25分ルールチェック
+const checkTasksStatus = () => {
   const tasks = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
   const now = Date.now();
 
@@ -34,133 +33,167 @@ function checkTasksStatus() {
       console.log(`   → ${task.error}は放棄されたとみなされます`);
     }
   }
-}
+  
+  return tasks;
+};
 
 // 設定エラー耐性チェック
-function performRobustCheck(command) {
+const performRobustCheck = (command) => {
   try {
-    const output = execSync(command, { 
-      encoding: 'utf8',
-      cwd: rootDir,
-      stdio: 'pipe'
-    });
-    return { success: true, output };
+    execSync(command, { encoding: 'utf8' });
+    return { success: true, errors: [] };
   } catch (error) {
     const output = error.stdout || error.stderr || '';
-    
+
     // 設定エラーを検出しつつエラーを抽出
-    if (output.includes('is not under \'rootDir\'') || 
-        output.includes('TS6059')) {
+    if (output.includes('is not under \'rootDir\'') || output.includes('TS6059')) {
       console.log('⚠️  設定問題を検出 - エラー抽出を継続');
     }
-    
+
     return { success: false, output };
   }
-}
+};
 
-// TypeScriptエラーの分析
-function analyzeTypeScriptErrors() {
-  console.log('🔍 TypeScriptエラー分析を開始...');
-  
+// TypeScriptエラーの解析
+const parseTypeScriptErrors = (output) => {
   const errors = [];
-  const commands = [
-    'npx tsc --noEmit --project backend/tsconfig.json',
-    'npx tsc --noEmit --project frontend/tsconfig.json'
-  ];
-
-  // フロントエンドがViteプロジェクトの場合はtsconfig.app.jsonを使用
-  if (fs.existsSync(path.join(rootDir, 'frontend/tsconfig.app.json'))) {
-    commands[1] = 'npx tsc --noEmit --project frontend/tsconfig.app.json';
-  }
-
-  for (const command of commands) {
-    const result = performRobustCheck(command);
-    if (!result.success && result.output) {
-      // エラーをパース
-      const lines = result.output.split('\n');
-      for (const line of lines) {
-        if (line.includes('error TS')) {
-          errors.push({
-            file: line.split('(')[0].trim(),
-            message: line.trim(),
-            timestamp: new Date().toLocaleString()
-          });
-        }
-      }
+  const lines = output.split('\n');
+  
+  for (const line of lines) {
+    // TypeScriptエラー形式: path(line,col): error TS####: message
+    const match = line.match(/^(.+?)\((\d+),(\d+)\):\s*error\s+(TS\d+):\s*(.+)$/);
+    if (match) {
+      errors.push({
+        file: match[1],
+        line: parseInt(match[2]),
+        column: parseInt(match[3]),
+        code: match[4],
+        message: match[5]
+      });
     }
   }
+  
+  return errors;
+};
 
-  // エラーログの保存
-  const errorReport = {
-    timestamp: new Date().toLocaleString(),
-    totalErrors: errors.length,
-    errors: errors
-  };
-  
-  fs.writeFileSync(errorsPath, JSON.stringify(errorReport, null, 2));
-  
-  return errorReport;
+// メイン処理
+console.log('🔍 TypeScriptエラー分析を開始します...\n');
+
+// 作業中タスクの確認
+const tasks = checkTasksStatus();
+console.log('📋 作業中のタスク:');
+if (Object.keys(tasks.working).length === 0) {
+  console.log('   なし');
+} else {
+  for (const [agent, task] of Object.entries(tasks.working)) {
+    console.log(`   - ${agent}: ${task.error} (開始: ${task.startedAt})`);
+  }
 }
+console.log('');
 
-// 型定義ファイル同期チェック
-function checkTypeDefinitionsSync() {
-  const frontendTypes = path.join(rootDir, 'frontend/src/types/index.ts');
-  const backendTypes = path.join(rootDir, 'backend/src/types/index.ts');
+// 各プロジェクトのエラーチェック
+const projects = [
+  { name: 'Backend', dir: 'backend', tsconfig: 'tsconfig.json' },
+  { name: 'Frontend', dir: 'frontend', tsconfig: 'tsconfig.app.json' }
+];
+
+const allErrors = [];
+let totalErrors = 0;
+
+for (const project of projects) {
+  const projectPath = path.join(process.cwd(), project.dir);
   
-  if (fs.existsSync(frontendTypes) && fs.existsSync(backendTypes)) {
-    const frontendContent = fs.readFileSync(frontendTypes, 'utf8');
-    const backendContent = fs.readFileSync(backendTypes, 'utf8');
+  // tsconfigの存在確認
+  const tsconfigPath = path.join(projectPath, project.tsconfig);
+  if (!fs.existsSync(tsconfigPath)) {
+    // フロントエンドでtsconfig.app.jsonがない場合はtsconfig.jsonを試す
+    if (project.name === 'Frontend') {
+      project.tsconfig = 'tsconfig.json';
+    }
+  }
+  
+  console.log(`\n📦 ${project.name} エラーチェック中...`);
+  
+  const command = `cd ${project.dir} && npx tsc --noEmit -p ${project.tsconfig}`;
+  const result = performRobustCheck(command);
+  
+  if (!result.success) {
+    const errors = parseTypeScriptErrors(result.output);
+    const projectErrors = errors.map(err => ({
+      ...err,
+      project: project.name.toLowerCase(),
+      file: path.join(project.dir, err.file)
+    }));
     
-    if (frontendContent !== backendContent) {
-      console.log('⚠️  警告: 型定義ファイルが同期されていません');
-      console.log('   → frontend/src/types/index.ts');
-      console.log('   → backend/src/types/index.ts');
-    } else {
-      console.log('✅ 型定義ファイルは同期されています');
-    }
-  }
-}
-
-// メイン実行
-function main() {
-  console.log('=== TypeScript エラー分析システム ===');
-  
-  initializeTasks();
-  checkTasksStatus();
-  
-  // 作業中タスクの表示
-  if (fs.existsSync(tasksPath)) {
-    const tasks = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-    const workingCount = Object.keys(tasks.working).length;
-    if (workingCount > 0) {
-      console.log(`📋 作業中のタスク: ${workingCount}件`);
-      for (const [agent, task] of Object.entries(tasks.working)) {
-        console.log(`   ${agent}: ${task.error}`);
-      }
-    }
-  }
-  
-  const report = analyzeTypeScriptErrors();
-  
-  console.log(`\n📊 エラー総数: ${report.totalErrors}`);
-  
-  if (report.totalErrors > 0) {
-    console.log('\n🔥 検出されたエラー:');
-    report.errors.forEach((error, index) => {
-      console.log(`${index + 1}. ${error.file}`);
-      console.log(`   ${error.message}`);
-    });
+    allErrors.push(...projectErrors);
+    totalErrors += projectErrors.length;
+    
+    console.log(`   ❌ ${projectErrors.length}個のエラーを検出`);
   } else {
-    console.log('🎉 TypeScriptエラーは検出されませんでした！');
+    console.log(`   ✅ エラーなし`);
   }
-  
-  checkTypeDefinitionsSync();
-  
-  console.log(`\n📝 詳細ログ: ${errorsPath}`);
 }
 
-if (require.main === module) {
-  main();
+// 型定義ファイルの同期チェック
+console.log('\n🔄 型定義ファイル同期チェック...');
+const frontendTypesPath = path.join('frontend', 'src', 'types', 'index.ts');
+const backendTypesPath = path.join('backend', 'src', 'types', 'index.ts');
+
+if (fs.existsSync(frontendTypesPath) && fs.existsSync(backendTypesPath)) {
+  const frontendTypes = fs.readFileSync(frontendTypesPath, 'utf8');
+  const backendTypes = fs.readFileSync(backendTypesPath, 'utf8');
+  
+  if (frontendTypes !== backendTypes) {
+    console.log('   ⚠️  型定義ファイルが同期されていません！');
+    console.log('   frontend/src/types/index.ts と backend/src/types/index.ts の内容が異なります');
+  } else {
+    console.log('   ✅ 型定義ファイルは同期されています');
+  }
+} else {
+  console.log('   ⚠️  型定義ファイルが見つかりません');
 }
 
-module.exports = { analyzeTypeScriptErrors, checkTypeDefinitionsSync };
+// エラーサマリー
+console.log('\n' + '='.repeat(60));
+console.log(`📊 エラーサマリー: 合計 ${totalErrors} 個のTypeScriptエラー`);
+console.log('='.repeat(60));
+
+// エラーをコード別にグループ化
+const errorsByCode = {};
+for (const error of allErrors) {
+  if (!errorsByCode[error.code]) {
+    errorsByCode[error.code] = [];
+  }
+  errorsByCode[error.code].push(error);
+}
+
+// エラーコード別サマリー表示
+for (const [code, errors] of Object.entries(errorsByCode)) {
+  console.log(`\n${code}: ${errors.length}件`);
+  const files = [...new Set(errors.map(e => e.file))];
+  files.forEach(file => {
+    console.log(`  - ${file}`);
+  });
+}
+
+// エラーレポートの保存
+const report = {
+  timestamp: getLocalTimestamp(),
+  totalErrors,
+  errors: allErrors,
+  errorsByCode,
+  workingTasks: tasks.working
+};
+
+const reportPath = path.join(logsDir, 'errors_latest.json');
+fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+
+console.log(`\n📝 詳細レポートを保存しました: ${reportPath}`);
+
+// 終了メッセージ
+if (totalErrors === 0) {
+  console.log('\n🎉 素晴らしい！TypeScriptエラーは0です！');
+} else {
+  console.log('\n💪 TypeScriptエラーを0にするために修正を開始してください');
+  console.log('   作業開始時は必ずtasks.jsonに登録してください');
+}

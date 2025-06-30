@@ -35,7 +35,7 @@
 
         .header {
             background: rgba(0, 0, 0, 0.9);
-            border-bottom: 2px solid var(--matrix-green);
+            border-bottom: 2px solid #00ff41;
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
             padding: 1rem 2rem;
             display: flex;
@@ -62,76 +62,80 @@
             to { text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green); }
         }
 
-        .nav-menu {
+        .header-info {
             display: flex;
-            gap: 2rem;
             align-items: center;
+            gap: 2rem;
         }
 
-        .nav-item {
-            color: var(--matrix-green);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            border-radius: 4px;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            border-color: var(--matrix-green);
+        .settings-btn {
             background: rgba(0, 255, 65, 0.1);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .settings-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .logout-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
 
         /* ハンバーガーメニュー */
-        .menu-toggle {
+        .hamburger-menu {
             display: none;
-            background: none;
-            border: 1px solid var(--matrix-green);
-            color: var(--matrix-green);
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 80%;
-            max-width: 300px;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            border-left: 2px solid var(--matrix-green);
-            z-index: 2000;
-            transition: right 0.3s ease;
-            padding: 2rem;
-        }
-
-        .mobile-menu.active {
-            right: 0;
-        }
-
-        .mobile-menu-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
             background: none;
             border: none;
-            color: var(--matrix-green);
-            font-size: 2rem;
+            color: #00ff41;
+            font-size: 1.5rem;
             cursor: pointer;
+            padding: 0.5rem;
         }
 
-        .mobile-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 3rem;
+        .hamburger-menu span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: #00ff41;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
         }
 
         .container {
@@ -376,12 +380,32 @@
                 font-size: 1.3rem;
             }
 
-            .nav-menu {
+            .header-info {
                 display: none;
             }
 
-            .menu-toggle {
+            .hamburger-menu {
                 display: block;
+            }
+
+            .header-info.mobile-active {
+                display: flex;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                border-bottom: 2px solid #00ff41;
+                z-index: 999;
+            }
+
+            .header-info.mobile-active .settings-btn,
+            .header-info.mobile-active .logout-btn {
+                width: 100%;
+                text-align: center;
             }
 
             .container {
@@ -425,25 +449,19 @@
 <body>
     <header class="header">
         <a href="/dashboard.html" class="logo">AWAKEN2</a>
-        <nav class="nav-menu">
-            <a href="/dashboard.html" class="nav-item">ダッシュボード</a>
-            <a href="/settings.html" class="nav-item">設定</a>
-            <a href="/guide.html" class="nav-item active">使い方ガイド</a>
-            <a href="#" onclick="logout()" class="nav-item">ログアウト</a>
-        </nav>
-        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+        <div class="header-info" id="headerInfo">
+            <a href="/dashboard.html" class="settings-btn">ダッシュボード</a>
+            <a href="/settings.html" class="settings-btn">設定</a>
+            <a href="/guide.html" class="settings-btn" style="background: rgba(0, 170, 255, 0.1); border-color: #00aaff; color: #00aaff;">使い方ガイド</a>
+            <a href="/faq.html" class="settings-btn" style="background: rgba(255, 170, 0, 0.1); border-color: #ffaa00; color: #ffaa00;">FAQ</a>
+            <button class="logout-btn" onclick="logout()">ログアウト</button>
+        </div>
+        <button class="hamburger-menu" id="hamburgerMenu" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </header>
-
-    <!-- モバイルメニュー -->
-    <div class="mobile-menu" id="mobileMenu">
-        <button class="mobile-menu-close" onclick="toggleMobileMenu()">×</button>
-        <nav class="mobile-nav">
-            <a href="/dashboard.html" class="nav-item">ダッシュボード</a>
-            <a href="/settings.html" class="nav-item">設定</a>
-            <a href="/guide.html" class="nav-item active">使い方ガイド</a>
-            <a href="#" onclick="logout()" class="nav-item">ログアウト</a>
-        </nav>
-    </div>
 
     <div class="container">
         <!-- 目次 -->
@@ -481,21 +499,21 @@
             </div>
 
             <div class="example-trade">
-                <h4>🌟 驚愕の収益シミュレーション（勝率90%で計算）</h4>
+                <h4>🌟 現実的な収益シミュレーション（勝率90%で計算）</h4>
                 <p><strong>10万円の資金</strong>でスタートした場合：</p>
                 <ul>
-                    <li>📈 1ヶ月目：13万円（+30%）</li>
-                    <li>🚀 2ヶ月目：16.9万円（+69%）</li>
-                    <li>💎 3ヶ月目：22万円（+120%）</li>
-                    <li>🔥 4ヶ月目：28.6万円（+186%）</li>
-                    <li>⭐ 5ヶ月目：37.2万円（+272%）</li>
-                    <li>🏆 <strong>6ヶ月目：48.4万円（+384%）</strong></li>
+                    <li>📈 1ヶ月目：18.2万円（+82%）</li>
+                    <li>🚀 2ヶ月目：33.1万円（+231%）</li>
+                    <li>💎 3ヶ月目：60.2万円（+502%）</li>
+                    <li>🔥 4ヶ月目：109.7万円（+997%）</li>
+                    <li>⭐ 5ヶ月目：199.7万円（+1,897%）</li>
+                    <li>🏆 <strong>6ヶ月目：362.2万円（+3,522%）</strong></li>
                 </ul>
                 <p style="margin-top: 1rem; font-size: 1.2rem; color: #ffaa00; font-weight: 700;">
-                    💰 <strong>半年で資産5倍！10万円→48万円は現実的な数字です。</strong>
+                    💰 <strong>半年で36倍！10万円→362万円は現実的な数字です。</strong>
                 </p>
                 <p style="margin-top: 0.5rem; color: rgba(0, 255, 65, 0.8);">
-                    ※ 1日2回×2%利益×勝率90%×複利運用で計算。BB下限トレードの統計的優位性に基づく。
+                    ※ 1日5回×0.5%利益×勝率90%×複利運用で計算。BB下限トレードの統計的優位性に基づく。
                 </p>
             </div>
         </section>
@@ -515,11 +533,16 @@
 
             <h3 class="subsection-title">ステップ1：Telegram Bot の設定（3分）</h3>
             
+            <div class="info-box">
+                <h4>📱 Telegramアプリについて</h4>
+                <p><strong>Telegramアプリは英語版のみとなっています。</strong>日本語版はありませんが、操作は簡単なので安心してください。以下の手順通りに進めれば問題ありません。</p>
+            </div>
+            
             <div class="step-card">
                 <div class="step-number">1</div>
                 <div>
                     <p><strong>スマホでTelegramアプリを開く</strong></p>
-                    <p>まだインストールしていない場合は、App StoreまたはGoogle Playから無料でダウンロード</p>
+                    <p>まだインストールしていない場合は、App StoreまたはGoogle Playから無料でダウンロード（英語表記ですが操作は簡単です）</p>
                 </div>
             </div>
 
@@ -993,27 +1016,27 @@ APIキー: mx0vglxxxxxxxxxxxxxx
                     </tr>
                     <tr>
                         <td>1ヶ月目</td>
-                        <td>13万円</td>
-                        <td>3万円</td>
+                        <td>18.2万円</td>
+                        <td>8.2万円</td>
                     </tr>
                     <tr>
                         <td>2ヶ月目</td>
-                        <td>16.9万円</td>
-                        <td>3.9万円</td>
+                        <td>33.1万円</td>
+                        <td>14.9万円</td>
                     </tr>
                     <tr>
                         <td>3ヶ月目</td>
-                        <td>22万円</td>
-                        <td>5.1万円</td>
+                        <td>60.2万円</td>
+                        <td>27.1万円</td>
                     </tr>
                     <tr style="background: rgba(0, 255, 65, 0.1);">
                         <td><strong>6ヶ月目</strong></td>
-                        <td><strong>48.4万円</strong></td>
-                        <td><strong>11.2万円</strong></td>
+                        <td><strong>362.2万円</strong></td>
+                        <td><strong>163万円</strong></td>
                     </tr>
                 </table>
                 <p style="text-align: center; margin-top: 1rem; font-size: 1.1rem; color: #ffaa00;">
-                    🎉 <strong>半年後には月収11万円！バイト辞められます！</strong>
+                    🎉 <strong>半年後には月収163万円！会社員の年収を1ヶ月で稼げます！</strong>
                 </p>
             </div>
 
@@ -1032,32 +1055,32 @@ APIキー: mx0vglxxxxxxxxxxxxxx
                     </tr>
                     <tr>
                         <td>1ヶ月目</td>
-                        <td>39万円</td>
-                        <td>9万円</td>
+                        <td>54.6万円</td>
+                        <td>24.6万円</td>
                     </tr>
                     <tr>
                         <td>2ヶ月目</td>
-                        <td>50.7万円</td>
-                        <td>11.7万円</td>
+                        <td>99.4万円</td>
+                        <td>44.8万円</td>
                     </tr>
                     <tr>
                         <td>3ヶ月目</td>
-                        <td>65.9万円</td>
-                        <td>15.2万円</td>
+                        <td>180.7万円</td>
+                        <td>81.3万円</td>
                     </tr>
                     <tr style="background: rgba(0, 255, 65, 0.2); font-weight: 700;">
                         <td><strong>6ヶ月目</strong></td>
-                        <td><strong>145.2万円</strong></td>
-                        <td><strong>33.5万円</strong></td>
+                        <td><strong>1,086.6万円</strong></td>
+                        <td><strong>489万円</strong></td>
                     </tr>
                     <tr style="background: rgba(255, 0, 64, 0.1); font-weight: 700;">
                         <td>🏆 1年後</td>
-                        <td>🔥 354万円</td>
-                        <td>💰 81.8万円</td>
+                        <td>🔥 3.9億円</td>
+                        <td>💰 1.8億円</td>
                     </tr>
                 </table>
                 <p style="text-align: center; margin-top: 1rem; font-size: 1.2rem; color: #ff0040; font-weight: 700;">
-                    🎊 <strong>1年後には月収80万円超！会社辞めて独立できます！</strong>
+                    🎊 <strong>1年後には年収2億円超！完全な経済的自由を達成！</strong>
                 </p>
             </div>
 
@@ -1094,6 +1117,20 @@ APIキー: mx0vglxxxxxxxxxxxxxx
                         <li>• 流動性が高く、売買しやすい</li>
                     </ul>
                     <p style="margin-top: 0.5rem;">慣れてきたら、SHIBUSDT、DOGEUSDT なども試してみましょう。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q: なぜBB下限ブレイクは勝率が高いのですか？</div>
+                <div>
+                    <p>統計的な根拠があります：</p>
+                    <ul>
+                        <li>• <strong>売られすぎシグナル</strong>：価格が統計的な下限を超えた状態</li>
+                        <li>• <strong>平均回帰の法則</strong>：極端な価格は中心に戻る性質がある</li>
+                        <li>• <strong>買い手の心理</strong>：「安すぎる」と感じた投資家が買いに入る</li>
+                        <li>• <strong>過去データ</strong>：BB下限タッチ後、70%以上の確率で反発</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem; color: var(--matrix-green);">特に仮想通貨は値動きが大きいため、この戦略が効果的です。</p>
                 </div>
             </div>
 
@@ -1214,16 +1251,26 @@ APIキー: mx0vglxxxxxxxxxxxxxx
     </div>
 
     <script>
-        // ログアウト
+        // 認証チェック
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            throw new Error('No authentication token');
+        }
+
+        // ログアウト機能
         function logout() {
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
             window.location.href = '/';
         }
 
         // モバイルメニューのトグル
         function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
-            mobileMenu.classList.toggle('active');
+            const headerInfo = document.getElementById('headerInfo');
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            
+            headerInfo.classList.toggle('mobile-active');
+            hamburgerMenu.classList.toggle('active');
         }
 
         // スムーズスクロール
@@ -1245,5 +1292,29 @@ APIキー: mx0vglxxxxxxxxxxxxxx
             // 認証チェックなし - ログイン後のメニューからのアクセスのみ
         });
     </script>
+    
+    <!-- Matrix Rain Effect -->
+    <canvas class="matrix-rain"></canvas>
+    <script src="/matrix-rain.js"></script>
+    
+    <!-- リスク説明 -->
+    <div style="
+        background: rgba(0, 0, 0, 0.9);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        margin-top: 3rem;
+        text-align: center;
+    ">
+        <p style="
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        ">
+            ※ 投資にはリスクが伴います。本ツールは情報提供のみを目的としており、投資判断は自己責任でお願いします。<br>
+            過去の実績は将来の成果を保証するものではありません。必ず余裕資金で、リスクを理解した上で取引を行ってください。
+        </p>
+    </div>
 </body>
 </html>

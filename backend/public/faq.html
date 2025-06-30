@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - よくある質問（FAQ）</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --matrix-green: #00ff41;
+            --danger-red: #ff0040;
+            --warning-orange: #ffaa00;
+            --info-blue: #00aaff;
+            --bg-black: #000000;
+            --bg-transparent: rgba(0, 0, 0, 0.8);
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', 'Roboto Mono', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-decoration: none;
+            text-shadow: 0 0 10px var(--matrix-green);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--matrix-green); }
+            to { text-shadow: 0 0 20px var(--matrix-green), 0 0 30px var(--matrix-green); }
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .settings-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .settings-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .logout-btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        /* ハンバーガーメニュー */
+        .hamburger-menu {
+            display: none;
+            background: none;
+            border: none;
+            color: #00ff41;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .hamburger-menu span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: #00ff41;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+            }
+
+            .header-info {
+                display: none;
+            }
+
+            .hamburger-menu {
+                display: block;
+            }
+
+            .header-info.mobile-active {
+                display: flex;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                border-bottom: 2px solid #00ff41;
+                z-index: 999;
+            }
+
+            .header-info.mobile-active .settings-btn,
+            .header-info.mobile-active .logout-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--matrix-green);
+            text-shadow: 0 0 20px var(--matrix-green);
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: rgba(0, 255, 65, 0.8);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* FAQ カテゴリー */
+        .faq-category {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--matrix-green);
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 4px solid var(--matrix-green);
+            text-shadow: 0 0 10px var(--matrix-green);
+        }
+
+        /* FAQ アイテム */
+        .faq-item {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--matrix-green);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--matrix-green);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+        }
+
+        .faq-answer-content {
+            padding: 0 1.5rem 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .faq-answer-content ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .faq-answer-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .faq-answer-content strong {
+            color: var(--matrix-green);
+        }
+
+        .info-box {
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid var(--info-blue);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-orange);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: var(--warning-orange);
+        }
+
+        .code-inline {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--matrix-green);
+        }
+
+        /* 検索ボックス */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.5rem;
+            background: rgba(0, 255, 65, 0.05);
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            color: var(--matrix-green);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--matrix-green);
+            font-size: 1.5rem;
+        }
+
+        /* お問い合わせセクション */
+        .contact-section {
+            background: rgba(0, 255, 65, 0.05);
+            border: 2px solid var(--matrix-green);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .contact-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--matrix-green);
+            margin-bottom: 1rem;
+        }
+
+        .contact-text {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-button {
+            background: var(--matrix-green);
+            color: var(--bg-black);
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .contact-button:hover {
+            background: #00ff41;
+            box-shadow: 0 0 20px var(--matrix-green);
+            transform: translateY(-2px);
+        }
+
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/dashboard.html" class="logo">AWAKEN2</a>
+        <div class="header-info" id="headerInfo">
+            <a href="/dashboard.html" class="settings-btn">ダッシュボード</a>
+            <a href="/settings.html" class="settings-btn">設定</a>
+            <a href="/guide.html" class="settings-btn" style="background: rgba(0, 170, 255, 0.1); border-color: #00aaff; color: #00aaff;">使い方ガイド</a>
+            <a href="/faq.html" class="settings-btn" style="background: rgba(255, 170, 0, 0.1); border-color: #ffaa00; color: #ffaa00;">FAQ</a>
+            <button class="logout-btn" onclick="logout()">ログアウト</button>
+        </div>
+        <button class="hamburger-menu" id="hamburgerMenu" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <div class="container">
+        <!-- ヒーローセクション -->
+        <div class="hero-section">
+            <h1 class="hero-title">よくある質問（FAQ）</h1>
+            <p class="hero-subtitle">
+                AWAKEN2についての疑問にお答えします。<br>
+                お探しの質問が見つからない場合は、お気軽にお問い合わせください。
+            </p>
+        </div>
+
+        <!-- 検索ボックス -->
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="質問を検索..." id="faqSearch">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- 初心者向けFAQ -->
+        <div class="faq-category">
+            <h2 class="category-title">🌟 初心者向けの質問</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">Telegramって何ですか？LINEじゃダメですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p>Telegramは世界中で使われているメッセージアプリです。</p>
+                        <ul>
+                            <li><strong>なぜTelegram？</strong>：Bot機能が充実していて自動通知に最適</li>
+                            <li><strong>LINEとの違い</strong>：24時間365日、確実に通知が届く</li>
+                            <li><strong>無料</strong>：アプリは完全無料で広告もありません</li>
+                            <li><strong>英語のみ</strong>：日本語版はありませんが、設定は簡単です</li>
+                        </ul>
+                        <div class="info-box">
+                            💡 最初は戸惑うかもしれませんが、3分で慣れます！
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">英語が苦手ですが大丈夫ですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>まったく問題ありません！</strong></p>
+                        <ul>
+                            <li>設定は<strong>コピー＆ペースト</strong>だけでOK</li>
+                            <li>通知は<strong>日本語</strong>で届きます</li>
+                            <li>ガイドに<strong>すべての手順を画像付き</strong>で説明</li>
+                            <li>必要な英単語は3つだけ：Start、Stop、Settings</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">スマホだけで使えますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>はい、スマホだけで完結します！</strong></p>
+                        <ul>
+                            <li><strong>初期設定</strong>：スマホのブラウザでOK</li>
+                            <li><strong>通知受信</strong>：Telegramアプリで受信</li>
+                            <li><strong>取引</strong>：MEXCアプリで売買</li>
+                        </ul>
+                        <p>パソコンは一切不要です。通勤中でも外出先でも取引できます。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">初期費用はいくら必要ですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>最低限必要な費用：</strong></p>
+                        <ul>
+                            <li><strong>AWAKEN2利用料</strong>：月50-150円（AI使用量による）</li>
+                            <li><strong>投資資金</strong>：最低1万円から（推奨10万円）</li>
+                        </ul>
+                        <div class="warning-box">
+                            ⚠️ 投資資金は余裕資金でお願いします。生活費は使わないでください。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">どれくらいで利益が出ますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>個人差がありますが、目安として：</strong></p>
+                        <ul>
+                            <li><strong>初日</strong>：設定と操作に慣れる期間</li>
+                            <li><strong>1週間</strong>：小さな利益が出始める</li>
+                            <li><strong>1ヶ月</strong>：月利20-80%を目指せる</li>
+                            <li><strong>3ヶ月</strong>：安定した利益を期待できる</li>
+                        </ul>
+                        <p>※ 相場状況や投資判断により結果は異なります。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術的なFAQ -->
+        <div class="faq-category">
+            <h2 class="category-title">🔧 技術的な質問</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">BB（ボリンジャーバンド）って何ですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>価格の「行き過ぎ」を判断する指標です。</strong></p>
+                        <ul>
+                            <li><strong>上限</strong>：買われすぎライン（売りシグナル）</li>
+                            <li><strong>下限</strong>：売られすぎライン（買いシグナル）</li>
+                            <li><strong>統計的根拠</strong>：価格の95%はバンド内に収まる</li>
+                        </ul>
+                        <p>AWAKEN2は<strong>下限突破時のみ</strong>通知するので、<strong>買いチャンスを逃しません！</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">通知が遅れることはありますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>ほぼリアルタイムで通知されます：</strong></p>
+                        <ul>
+                            <li><strong>監視間隔</strong>：1-5分ごと（設定可能）</li>
+                            <li><strong>通知速度</strong>：条件達成から10秒以内</li>
+                            <li><strong>遅延要因</strong>：ネット環境による影響のみ</li>
+                        </ul>
+                        <div class="info-box">
+                            💡 大きなチャンスは数分続くので、多少の遅延は問題ありません。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">MEXCの口座開設は難しいですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>10分で完了します！</strong></p>
+                        <ol>
+                            <li>メールアドレスで登録（1分）</li>
+                            <li>本人確認書類をアップロード（3分）</li>
+                            <li>審査待ち（5-30分）</li>
+                            <li>入金して取引開始！</li>
+                        </ol>
+                        <p>※ 日本語対応で、サポートも充実しています。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">APIキーって安全ですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>適切に管理すれば安全です：</strong></p>
+                        <ul>
+                            <li><strong>読み取り専用</strong>に設定（出金不可）</li>
+                            <li><strong>IP制限</strong>をかける（推奨）</li>
+                            <li><strong>暗号化保存</strong>されます</li>
+                            <li><strong>第三者に見せない</strong>（重要！）</li>
+                        </ul>
+                        <div class="warning-box">
+                            ⚠️ APIキーは銀行の暗証番号のようなもの。絶対に他人に教えないでください。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">複数の通貨を同時に監視できますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>はい、最大10通貨まで同時監視できます！</strong></p>
+                        <ul>
+                            <li>PEPEUSDT、SHIBUSDT、DOGEUSDTなど</li>
+                            <li>通貨ごとに通知ON/OFF可能</li>
+                            <li>優先順位の設定も可能</li>
+                        </ul>
+                        <p>ただし、最初は1-2通貨から始めることをおすすめします。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- お金関連FAQ -->
+        <div class="faq-category">
+            <h2 class="category-title">💰 お金に関する質問</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">最低いくらから始められますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>1万円から始められますが、10万円推奨です：</strong></p>
+                        <ul>
+                            <li><strong>1万円</strong>：お試し運用（月1-3万円の利益目標）</li>
+                            <li><strong>10万円</strong>：本格運用（月10-30万円の利益目標）</li>
+                            <li><strong>30万円以上</strong>：プロ運用（月収100万円も視野に）</li>
+                        </ul>
+                        <p>※ 少額から始めて、利益を再投資していく方法がおすすめです。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">税金はどうなりますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>仮想通貨の利益は雑所得として課税されます：</strong></p>
+                        <ul>
+                            <li><strong>年間20万円以下</strong>：確定申告不要（会社員の場合）</li>
+                            <li><strong>年間20万円超</strong>：確定申告が必要</li>
+                            <li><strong>税率</strong>：所得に応じて15-55%</li>
+                        </ul>
+                        <div class="warning-box">
+                            ⚠️ 詳細は税理士にご相談ください。脱税は絶対にダメです。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">出金方法は？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>MEXCから日本の銀行へ出金する方法：</strong></p>
+                        <ol>
+                            <li>MEXCでUSDTを売却してJPYに変換</li>
+                            <li>日本の取引所（GMOコインなど）へ送金</li>
+                            <li>日本の取引所から銀行口座へ出金</li>
+                        </ol>
+                        <p>※ 手数料は合計で1-3%程度です。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">クレジットカードの請求はいつ来ますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>Claude API利用料の請求について：</strong></p>
+                        <ul>
+                            <li><strong>請求日</strong>：月末締め、翌月請求</li>
+                            <li><strong>金額</strong>：使用量により50-150円程度</li>
+                            <li><strong>明細</strong>：「ANTHROPIC」と表示されます</li>
+                        </ul>
+                        <p>※ 1日の利益で十分ペイできる金額です。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">無料お試し期間はありますか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>申し訳ございませんが、無料期間はありません：</strong></p>
+                        <ul>
+                            <li>AI利用料が発生するため</li>
+                            <li>代わりに<strong>超低価格</strong>（月50-150円）で提供</li>
+                            <li>いつでも解約可能</li>
+                        </ul>
+                        <p>1回の取引利益で1年分の利用料が回収できます！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- トラブルシューティング -->
+        <div class="faq-category">
+            <h2 class="category-title">🔥 困ったときは</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">「認証エラー」が出ます</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>以下を確認してください：</strong></p>
+                        <ol>
+                            <li><strong>APIキー</strong>が正しくコピーされているか</li>
+                            <li>前後に<strong>余計なスペース</strong>が入っていないか</li>
+                            <li>MEXCで<strong>API有効化</strong>されているか</li>
+                            <li><strong>IP制限</strong>が適切に設定されているか</li>
+                        </ol>
+                        <div class="info-box">
+                            💡 それでも解決しない場合は、APIキーを再発行してみてください。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">通知が多すぎます/少なすぎます</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>設定で調整できます：</strong></p>
+                        <ul>
+                            <li><strong>多すぎる場合</strong>：
+                                <ul>
+                                    <li>監視通貨を減らす（2-3個に）</li>
+                                    <li>BB突破の深さを調整（-3%など）</li>
+                                    <li>1日の通知上限を設定（5回まで）</li>
+                                </ul>
+                            </li>
+                            <li><strong>少なすぎる場合</strong>：
+                                <ul>
+                                    <li>監視通貨を増やす（5-10個に）</li>
+                                    <li>監視間隔を短くする（1分に）</li>
+                                    <li>ボラティリティの高い通貨を選ぶ</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">買えない通貨があります</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>以下の原因が考えられます：</strong></p>
+                        <ul>
+                            <li><strong>残高不足</strong>：USDTの残高を確認</li>
+                            <li><strong>最小注文額</strong>：通貨により5-10USDT以上必要</li>
+                            <li><strong>取引停止中</strong>：メンテナンスや上場廃止</li>
+                            <li><strong>地域制限</strong>：日本から取引できない通貨</li>
+                        </ul>
+                        <p>※ PEPE、SHIB、DOGEなどの主要ミームコインは問題なく取引できます。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">深夜に通知が来て困ります</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>「通知しない時間帯」を設定できます：</strong></p>
+                        <ol>
+                            <li>設定画面の「Telegram通知設定」を開く</li>
+                            <li>「通知しない時間帯」で23:00〜6:00などを設定</li>
+                            <li>設定を保存</li>
+                        </ol>
+                        <p>※ 大きなチャンスも逃す可能性があるので、音だけOFFにする方法もあります。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">なぜBB下限ブレイクは勝率が高いのですか？</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <p><strong>統計的な根拠があります：</strong></p>
+                        <ul>
+                            <li><strong>売られすぎシグナル</strong>：価格が統計的な下限を超えた状態</li>
+                            <li><strong>平均回帰の法則</strong>：極端な価格は中心に戻る性質がある</li>
+                            <li><strong>買い手の心理</strong>：「安すぎる」と感じた投資家が買いに入る</li>
+                            <li><strong>過去データ</strong>：BB下限タッチ後、70%以上の確率で反発</li>
+                        </ul>
+                        <p>特に仮想通貨は値動きが大きいため、この戦略が効果的です。</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // 認証チェック
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            throw new Error('No authentication token');
+        }
+
+        // ログアウト機能
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        // モバイルメニューのトグル
+        function toggleMobileMenu() {
+            const headerInfo = document.getElementById('headerInfo');
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            
+            headerInfo.classList.toggle('mobile-active');
+            hamburgerMenu.classList.toggle('active');
+        }
+
+        // FAQ開閉
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                const wasActive = item.classList.contains('active');
+                
+                // 他のFAQを閉じる
+                document.querySelectorAll('.faq-item').forEach(faq => {
+                    faq.classList.remove('active');
+                });
+                
+                // クリックしたFAQを開閉
+                if (!wasActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // FAQ検索機能
+        document.getElementById('faqSearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const question = item.querySelector('.faq-question').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer-content').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    // 検索語をハイライト
+                    if (searchTerm) {
+                        item.classList.add('active');
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // 検索語が空の場合、すべて表示して閉じる
+            if (!searchTerm) {
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.style.display = 'block';
+                    item.classList.remove('active');
+                });
+            }
+        });
+    </script>
+    
+    <!-- Matrix Rain Effect -->
+    <canvas class="matrix-rain"></canvas>
+    <script src="/matrix-rain.js"></script>
+</body>
+</html>

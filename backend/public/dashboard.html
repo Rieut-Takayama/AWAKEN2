@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>AWAKEN2 - メインダッシュボード</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="/js/header.js"></script>
     
     <style>
         * {
@@ -541,7 +545,66 @@
             padding: 2rem;
         }
 
+        /* ハンバーガーメニュー */
+        .hamburger-menu {
+            display: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+        
+        .hamburger-menu span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: #00ff41;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px #00ff41;
+        }
+        
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
         @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+                padding: 1rem;
+            }
+            
+            .hamburger-menu {
+                display: block;
+            }
+            
+            .header-info {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(0, 255, 65, 0.3);
+            }
+            
+            .header-info.active {
+                display: flex;
+            }
+            
+            .settings-btn, .logout-btn {
+                width: 100%;
+                text-align: center;
+                padding: 0.8rem;
+            }
+            
             .currency-grid {
                 grid-template-columns: 1fr;
             }
@@ -562,13 +625,42 @@
     
     <header class="header">
         <a href="#" class="logo">AWAKEN2</a>
-        <div class="header-info">
-            <a href="/settings.html" class="settings-btn">設定</a>
+        <div class="hamburger-menu" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="header-info" id="mobileMenu">
+            <a href="/settings.html" class="settings-btn">⚙️ 設定</a>
+            <a href="/guide.html" class="settings-btn" style="background: rgba(0, 170, 255, 0.1); border-color: #00aaff; color: #00aaff;">📖 使い方</a>
             <button class="logout-btn" onclick="logout()">ログアウト</button>
         </div>
     </header>
 
     <main class="main-container">
+        
+        <!-- システムステータス -->
+        <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid var(--matrix-green); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 style="color: var(--matrix-green); font-size: 1.1rem; margin-bottom: 1rem; font-family: 'Orbitron', monospace;">📡 システムステータス</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7);">AI分析</div>
+                    <div id="aiStatus" style="font-size: 1.2rem; font-weight: bold; color: #00ff41;">✅ 稼働中</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7);">監視通貨</div>
+                    <div id="monitoringCount" style="font-size: 1.2rem; font-weight: bold; color: #00ff41;">0通貨</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7);">買い度閾値</div>
+                    <div id="thresholdStatus" style="font-size: 1.2rem; font-weight: bold; color: #00ff41;">75点以上</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7);">詳細通知</div>
+                    <div id="alertsStatus" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00;">0個有効</div>
+                </div>
+            </div>
+        </div>
         
         <div id="highScoreAlert" class="high-score-alert">
             <span id="alertContent"><strong>📊 監視中</strong><br>投資チャンスを分析しています</span>
@@ -590,22 +682,65 @@
             <!-- 動的に生成される通貨カード -->
         </div>
 
-        <!-- 通知履歴とAI分析 -->
+        <!-- アクションボタン群 -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <button onclick="analyzeNow()" style="
+                background: linear-gradient(45deg, rgba(255, 170, 0, 0.3), rgba(255, 0, 64, 0.3));
+                color: #ffaa00;
+                border: 2px solid #ffaa00;
+                padding: 1rem 3rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1.2rem;
+                font-weight: 700;
+                font-family: 'Orbitron', monospace;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
+                display: inline-flex;
+                align-items: center;
+                gap: 1rem;
+            " onmouseover="this.style.boxShadow='0 0 50px rgba(255, 170, 0, 0.8)'; this.style.transform='scale(1.05)'" onmouseout="this.style.boxShadow='0 0 30px rgba(255, 170, 0, 0.5)'; this.style.transform='scale(1)'">
+                <span style="font-size: 1.5rem;">🔥</span>
+                今すぐ全通貨を分析
+                <span style="font-size: 0.8rem; opacity: 0.8;">（約0.1円）</span>
+            </button>
+            <div style="margin-top: 0.5rem; color: rgba(255, 170, 0, 0.7); font-size: 0.85rem;">
+                Claude AIで詳細分析を強制実行 • 通常は5秒ごとにテクニカル指標のみ自動計算
+            </div>
+        </div>
+
+        <!-- 高スコア履歴とAI分析 -->
         <div class="notification-history">
-            <h3 class="history-title">本日の通知履歴 <span style="font-size: 0.8rem; color: rgba(0, 255, 65, 0.6);">（クリックでAI分析）</span></h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="history-title">買いチャンス履歴 <span style="font-size: 0.8rem; color: rgba(0, 255, 65, 0.6);">（クリックでAI分析詳細）</span></h3>
+                <select id="historyFilter" onchange="filterHistory()" style="
+                    background: rgba(0, 0, 0, 0.5);
+                    border: 1px solid rgba(0, 255, 65, 0.5);
+                    color: #00ff41;
+                    padding: 0.3rem 0.8rem;
+                    border-radius: 4px;
+                    font-family: 'Roboto Mono', monospace;
+                ">
+                    <option value="today">本日</option>
+                    <option value="week">過去7日間</option>
+                    <option value="month">過去30日間</option>
+                </select>
+            </div>
             <div id="notificationList" class="notification-list">
-                <div class="no-notifications">本日はまだ通知がありません</div>
+                <div class="no-notifications">選択期間中の高スコア（75点以上）履歴がありません</div>
             </div>
         </div>
         
         <!-- AI分析詳細モーダル -->
-        <div id="aiAnalysisModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 2000; overflow-y: auto;">
-            <div style="max-width: 800px; margin: 2rem auto; background: rgba(0, 0, 0, 0.95); border: 2px solid #00ff41; border-radius: 8px; padding: 2rem; position: relative;">
-                <button onclick="closeAIAnalysis()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255, 0, 64, 0.2); border: 1px solid #ff0040; color: #ff0040; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">✕ 閉じる</button>
+        <div id="aiAnalysisModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10000; overflow-y: auto; padding: 1rem;">
+            <div style="max-width: 900px; margin: 2rem auto; background: rgba(0, 0, 0, 0.98); border: 2px solid #00ff41; border-radius: 8px; padding: 2rem; position: relative; box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);">
+                <button onclick="closeAIAnalysis()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255, 0, 64, 0.3); border: 1px solid #ff0040; color: #ff0040; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;">✕ 閉じる</button>
                 
-                <h2 style="font-family: 'Orbitron', monospace; color: #00ff41; margin-bottom: 1.5rem; text-shadow: 0 0 10px #00ff41;">🤖 AI詳細分析レポート</h2>
+                <h2 style="font-family: 'Orbitron', monospace; color: #00ff41; margin-bottom: 1.5rem; text-shadow: 0 0 10px #00ff41; font-size: 1.5rem;">🤖 AI詳細分析レポート</h2>
                 
-                <div id="aiAnalysisContent">
+                <div id="aiAnalysisContent" style="max-height: 70vh; overflow-y: auto;">
                     <!-- 動的に生成されるAI分析内容 -->
                 </div>
             </div>
@@ -618,10 +753,20 @@
     </main>
 
     <script>
+        // ハンバーガーメニューのトグル
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const hamburger = document.querySelector('.hamburger-menu');
+            menu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+        
         // 認証チェック
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/';
+            window.location.href = '/login';
+            // ここで処理を止める
+            throw new Error('No authentication token');
         }
 
         // ログアウト機能
@@ -641,72 +786,13 @@
         // 通知履歴
         let notificationHistory = [];
         
-        // モックデータ生成関数
-        function generateMockData(symbol) {
-            const scores = Array.from({length: 24}, () => Math.floor(Math.random() * 40) + 45);
-            const currentScore = Math.floor(Math.random() * 40) + 50;
-            
-            // RSIスコア計算（30以下で高スコア、70以上で低スコア）
-            const rsiValue = Math.floor(Math.random() * 70) + 15;
-            let rsiScore;
-            if (rsiValue <= 30) rsiScore = Math.floor(Math.random() * 20) + 80; // 80-100
-            else if (rsiValue >= 70) rsiScore = Math.floor(Math.random() * 30) + 20; // 20-50
-            else rsiScore = Math.floor(Math.random() * 30) + 50; // 50-80
-            
-            // MACDスコア（bullishで高スコア）
-            const macdBullish = Math.random() > 0.5;
-            const macdScore = macdBullish ? Math.floor(Math.random() * 30) + 70 : Math.floor(Math.random() * 40) + 30;
-            
-            // BBスコア（指定配分での計算）
-            // 各時間足のBB位置（-2～+2の範囲）
-            const bb5m = Math.random() * 4 - 2;   // 5分足
-            const bb15m = Math.random() * 4 - 2;  // 15分足（メイン）
-            const bb30m = Math.random() * 4 - 2;  // 30分足
-            const bb1h = Math.random() * 4 - 2;   // 1時間足
-            const bb4h = Math.random() * 4 - 2;   // 4時間足
-            const bb1d = Math.random() * 4 - 2;   // 日足
-            
-            // 指定された重み付けで計算
-            const bbWeighted = (bb5m * 0.10) +    // 5分: 10%
-                              (bb15m * 0.40) +   // 15分: 40%（メイン）
-                              (bb30m * 0.25) +   // 30分: 25%
-                              (bb1h * 0.10) +    // 1時間: 10%
-                              (bb4h * 0.05) +    // 4時間: 5%
-                              (bb1d * 0.10);     // 日足: 10%
-            
-            let bbScore;
-            if (bbWeighted <= -2) {
-                bbScore = Math.floor(Math.random() * 10) + 90; // 90-100 即買い
-            } else if (bbWeighted <= -1.5) {
-                bbScore = Math.floor(Math.random() * 15) + 75; // 75-89 強い買い
-            } else if (bbWeighted <= -1) {
-                bbScore = Math.floor(Math.random() * 15) + 60; // 60-74 買い準備
-            } else if (bbWeighted >= 1.5) {
-                bbScore = Math.floor(Math.random() * 20) + 10; // 10-29 売り
-            } else {
-                bbScore = Math.floor(Math.random() * 20) + 40; // 40-59 中立
-            }
-            
-            return {
-                symbol: symbol,
-                name: symbol.replace('USDT', '/USDT'),
-                price: Math.random() * 50000 + 100,
-                score: currentScore,
-                trend: currentScore > 65 ? 'up' : currentScore < 50 ? 'down' : 'sideways',
-                change: ((Math.random() * 10) - 5).toFixed(1) + '%',
-                scoreHistory: scores,
-                rsiScore: rsiScore,
-                macdScore: macdScore,
-                bbScore: bbScore
-            };
-        }
 
         function renderCurrencies() {
             const grid = document.getElementById('currencyGrid');
             const highScoreAlert = document.getElementById('highScoreAlert');
             
             // 高スコア通貨の存在確認
-            const hasHighScore = watchedCurrencies.some(currency => currency.score >= 75);
+            const hasHighScore = watchedCurrencies.some(currency => (currency.score || 0) >= 75);
             const alertContent = document.getElementById('alertContent');
             
             if (hasHighScore) {
@@ -722,30 +808,34 @@
             document.getElementById('notificationStatus').textContent = statusText;
             
             // スコア順でソート
-            const sortedCurrencies = [...watchedCurrencies].sort((a, b) => b.score - a.score);
+            const sortedCurrencies = [...watchedCurrencies].sort((a, b) => (b.score || 0) - (a.score || 0));
             
             grid.innerHTML = sortedCurrencies.map(currency => {
                 let cardClass = 'currency-card';
-                if (currency.score >= settings.threshold) cardClass += ' high-score-card';
-                else if (currency.score >= 60) cardClass += ' medium-score-card';
+                const currentScore = currency.score || 0;
+                if (currentScore >= settings.threshold) cardClass += ' high-score-card';
+                else if (currentScore >= 60) cardClass += ' medium-score-card';
                 
                 // スパークラインの生成
-                const sparkline = generateSparkline(currency.scoreHistory, currency.score >= settings.threshold);
+                const sparkline = generateSparkline(currency.scoreHistory || [], currentScore >= settings.threshold);
                 
                 // テクニカル指標のクラス（スコアに基づく）
-                const rsiClass = currency.rsiScore >= 75 ? 'good' : currency.rsiScore <= 40 ? 'danger' : 'warning';
-                const macdClass = currency.macdScore >= 75 ? 'good' : currency.macdScore <= 40 ? 'danger' : 'warning';
-                const bbClass = currency.bbScore >= 75 ? 'good' : currency.bbScore <= 40 ? 'danger' : 'warning';
+                const rsiScore = currency.indicators?.rsi?.score || 50;
+                const macdScore = currency.indicators?.macd?.score || 50;
+                const bbScore = currency.indicators?.bb?.score || 50;
+                const rsiClass = rsiScore >= 75 ? 'good' : rsiScore <= 40 ? 'danger' : 'warning';
+                const macdClass = macdScore >= 75 ? 'good' : macdScore <= 40 ? 'danger' : 'warning';
+                const bbClass = bbScore >= 75 ? 'good' : bbScore <= 40 ? 'danger' : 'warning';
                 
                 return `
                     <div class="${cardClass}">
                         <div class="currency-header">
-                            <div class="currency-name">${currency.name}</div>
-                            <div class="currency-price">$${currency.price.toLocaleString()}</div>
+                            <div class="currency-name">${currency.name || currency.symbol}</div>
+                            <div class="currency-price">$${(currency.price || 0).toLocaleString()}</div>
                         </div>
                         
                         <div class="score-display">
-                            <div class="score-value">${currency.score}</div>
+                            <div class="score-value">${currency.score || '計算中'}</div>
                             <div class="score-label">買い度指数</div>
                         </div>
                         
@@ -756,45 +846,48 @@
                         <div class="technical-indicators">
                             <div class="indicator-item">
                                 <div class="indicator-label">RSI</div>
-                                <div class="indicator-value ${rsiClass}">${currency.rsiScore}点</div>
+                                <div class="indicator-value ${rsiClass}">${currency.indicators?.rsi?.score || '--'}点</div>
                             </div>
                             <div class="indicator-item">
                                 <div class="indicator-label">MACD</div>
-                                <div class="indicator-value ${macdClass}">${currency.macdScore}点</div>
+                                <div class="indicator-value ${macdClass}">${currency.indicators?.macd?.score || '--'}点</div>
                             </div>
                             <div class="indicator-item">
                                 <div class="indicator-label">BB</div>
-                                <div class="indicator-value ${bbClass}">${currency.bbScore}点</div>
+                                <div class="indicator-value ${bbClass}">${currency.indicators?.bb?.score || '--'}点</div>
                             </div>
                         </div>
                         
                         <div class="trend-indicator ${currency.trend === 'up' ? 'trend-up' : 'trend-down'}">
-                            <span>${currency.change}</span>
+                            <span>${currency.change24h || currency.change || '--'}</span>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // スパークライン生成
+        // スパークライン生成（最近10回分のみ表示）
         function generateSparkline(data, hasHighScore) {
             const width = 200;
             const height = 40;
             const padding = 2;
             
-            const max = Math.max(...data);
-            const min = Math.min(...data);
-            const range = max - min;
+            // 最近10回分のデータのみを使用
+            const recentData = data.slice(-10);
             
-            const points = data.map((value, index) => {
-                const x = (index / (data.length - 1)) * (width - 2 * padding) + padding;
+            const max = Math.max(...recentData);
+            const min = Math.min(...recentData);
+            const range = max - min || 1; // ゼロ除算を防ぐ
+            
+            const points = recentData.map((value, index) => {
+                const x = (index / (recentData.length - 1)) * (width - 2 * padding) + padding;
                 const y = height - ((value - min) / range) * (height - 2 * padding) - padding;
                 return `${x},${y}`;
             }).join(' ');
             
-            const highScorePoints = hasHighScore ? data.map((value, index) => {
+            const highScorePoints = hasHighScore ? recentData.map((value, index) => {
                 if (value >= settings.threshold) {
-                    const x = (index / (data.length - 1)) * (width - 2 * padding) + padding;
+                    const x = (index / (recentData.length - 1)) * (width - 2 * padding) + padding;
                     const y = height - ((value - min) / range) * (height - 2 * padding) - padding;
                     return `<circle class="chart-point" cx="${x}" cy="${y}" r="2"/>`;
                 }
@@ -814,7 +907,7 @@
             const list = document.getElementById('notificationList');
             
             if (notificationHistory.length === 0) {
-                list.innerHTML = '<div class="no-notifications">本日はまだ通知がありません</div>';
+                list.innerHTML = '<div class="no-notifications">本日はまだ高スコア（75点以上）の履歴がありません</div>';
                 return;
             }
             
@@ -827,11 +920,10 @@
             `).join('');
         }
         
-        // 次回通知可能時間の更新
+        // 次回通知可能時間の更新（固定表示）
         function updateNextNotificationTime() {
-            // モック実装
-            const minutes = Math.floor(Math.random() * 60);
-            document.getElementById('nextNotification').textContent = minutes > 0 ? `${minutes}分後` : '通知可能';
+            // 固定値を表示
+            document.getElementById('nextNotification').textContent = '--分後';
         }
 
         function updateLastUpdated() {
@@ -846,6 +938,11 @@
             });
             document.getElementById('lastUpdated').textContent = formatted;
         }
+        
+        // 時間表示の自動更新（10秒ごと）
+        setInterval(() => {
+            updateLastUpdated();
+        }, 10000);
 
         // 設定を読み込む
         async function loadSettings() {
@@ -860,31 +957,58 @@
                     const data = await response.json();
                     if (data.data) {
                         settings = data.data;
-                        // 設定から監視銘柄を初期化（実データは後で取得）
-                        if (settings.symbolsWithIntervals) {
+                        // 設定から監視銘柄を初期化
+                        if (settings.symbolsWithIntervals && settings.symbolsWithIntervals.length > 0) {
                             watchedCurrencies = settings.symbolsWithIntervals.map(item => ({
                                 symbol: item.symbol.replace('/', ''),
                                 name: item.symbol,
                                 interval: item.interval
                             }));
-                        } else if (settings.symbols) {
-                            watchedCurrencies = settings.symbols.map(symbol => ({
-                                symbol: symbol.replace('/', ''),
-                                name: symbol,
-                                interval: settings.notificationInterval || 60
-                            }));
+                            // データ取得
+                            await fetchRealTimeData();
+                        } else {
+                            // 設定が空の場合は設定画面へ誘導
+                            const grid = document.getElementById('currencyGrid');
+                            grid.innerHTML = `
+                                <div style="text-align: center; padding: 3rem;">
+                                    <p style="color: rgba(0, 255, 65, 0.8); margin-bottom: 1.5rem; font-size: 1.1rem;">
+                                        監視する仮想通貨が設定されていません
+                                    </p>
+                                    <p style="color: rgba(0, 255, 65, 0.6); margin-bottom: 2rem;">
+                                        設定画面で監視したい仮想通貨を選択してください
+                                    </p>
+                                    <a href="/settings.html" style="
+                                        color: #00ff41; 
+                                        text-decoration: none; 
+                                        border: 2px solid #00ff41; 
+                                        padding: 0.8rem 2rem; 
+                                        border-radius: 4px; 
+                                        display: inline-block;
+                                        font-weight: 600;
+                                        transition: all 0.3s;
+                                        background: rgba(0, 255, 65, 0.1);
+                                    " onmouseover="this.style.background='rgba(0, 255, 65, 0.2)'" 
+                                       onmouseout="this.style.background='rgba(0, 255, 65, 0.1)'">
+                                        設定画面へ
+                                    </a>
+                                </div>
+                            `;
+                            updateNextNotificationTime();
                         }
-                        // 初回データ取得
-                        await fetchRealTimeData();
                     }
                 }
             } catch (error) {
                 console.error('設定の読み込みエラー:', error);
-                // デフォルトの銘柄を設定
-                watchedCurrencies = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT'].map(symbol => generateMockData(symbol));
-                renderCurrencies();
-                renderNotificationHistory();
-                updateNextNotificationTime();
+                // エラー時は設定画面への誘導を表示
+                const grid = document.getElementById('currencyGrid');
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <p style="color: rgba(0, 255, 65, 0.8); margin-bottom: 1rem;">設定が完了していません</p>
+                        <a href="/settings.html" style="color: #00ff41; text-decoration: none; border: 1px solid #00ff41; padding: 0.5rem 1.5rem; border-radius: 4px; display: inline-block;">
+                            設定画面へ
+                        </a>
+                    </div>
+                `;
             }
         }
         
@@ -1005,9 +1129,302 @@
             `;
         }
         
+        // システムステータスを更新
+        function updateSystemStatus() {
+            // 監視通貨数
+            document.getElementById('monitoringCount').textContent = `${watchedCurrencies.length}通貨`;
+            
+            // 買い度閾値
+            document.getElementById('thresholdStatus').textContent = `${settings.threshold || 75}点以上`;
+            
+            // 詳細通知の数
+            if (settings.alertConfig) {
+                const activeAlerts = [
+                    settings.alertConfig.surgeAlert,
+                    settings.alertConfig.dropAlert,
+                    settings.alertConfig.volumeAlert,
+                    settings.alertConfig.volatilityAlert,
+                    settings.alertConfig.stagnationAlert,
+                    settings.alertConfig.whipsawAlert,
+                    settings.alertConfig.supportResistanceAlert,
+                    settings.alertConfig.consecutiveBarsAlert,
+                    settings.alertConfig.volumeDryUpAlert
+                ].filter(Boolean).length;
+                
+                document.getElementById('alertsStatus').textContent = `${activeAlerts}個有効`;
+                document.getElementById('alertsStatus').style.color = activeAlerts > 0 ? '#ffaa00' : '#666';
+            }
+            
+            // AI分析ステータス
+            const aiStatus = document.getElementById('aiStatus');
+            if (settings.notificationsEnabled && watchedCurrencies.length > 0) {
+                aiStatus.textContent = '✅ 稼働中';
+                aiStatus.style.color = '#00ff41';
+            } else {
+                aiStatus.textContent = '⏸️ 停止中';
+                aiStatus.style.color = '#ff0040';
+            }
+        }
+        
+        // 履歴フィルター
+        function filterHistory() {
+            const filter = document.getElementById('historyFilter').value;
+            // TODO: 実装予定（バックエンドでの履歴保存が必要）
+            console.log('履歴フィルター:', filter);
+        }
+        
         // 初期表示
         updateLastUpdated();
         loadSettings();
+        
+        // ページ更新ボタン（手動更新用）
+        function refreshData() {
+            fetchRealTimeData();
+        }
+        
+        // 今すぐ分析ボタン（通知制限に含まねぇ！）
+        async function analyzeNow() {
+            const analyzeBtn = event.target;
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '🔄 分析中...';
+            
+            try {
+                // 監視銘柄を取得
+                const symbols = watchedCurrencies.map(c => c.symbol.replace('/', ''));
+                
+                if (symbols.length === 0) {
+                    alert('⚠️ 監視する通貨を設定してください');
+                    return;
+                }
+                
+                // 強制的にAI分析を実行（通知は送らねぇ！）
+                const response = await fetch('/api/analyze/force', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ symbols })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 結果をモーダルで表示
+                    showAnalysisResults(result.data);
+                    
+                    // データも更新
+                    fetchRealTimeData();
+                } else {
+                    alert('❌ 分析に失敗しました');
+                }
+            } catch (error) {
+                console.error('分析エラー:', error);
+                alert('❌ 分析エラーが発生しました');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<span style="font-size: 1.5rem;">🔥</span>今すぐ全通貨を分析<span style="font-size: 0.8rem; opacity: 0.8;">（約0.1円）</span>';
+            }
+        }
+        
+        // 分析結果をモーダルで表示
+        function showAnalysisResults(results) {
+            const modal = document.getElementById('aiAnalysisModal');
+            const content = document.getElementById('aiAnalysisContent');
+            
+            // データの安全性チェック
+            if (!results || !Array.isArray(results)) {
+                content.innerHTML = '<div style="color: #ff0040; text-align: center; padding: 2rem;">分析結果の取得に失敗しました</div>';
+                modal.style.display = 'block';
+                return;
+            }
+            
+            const sortedResults = results.sort((a, b) => (b.score || 0) - (a.score || 0));
+            
+            content.innerHTML = `
+                <div style="color: #00ff41; font-family: 'M PLUS 1 Code', monospace;">
+                    <h3 style="color: #ffaa00; margin-bottom: 1rem;">🔥 今すぐ分析の結果</h3>
+                    <p style="color: rgba(0, 255, 65, 0.7); margin-bottom: 1.5rem;">
+                        💡 この分析は手動実行のため、<strong>1日5回の通知制限に含まれません</strong>。
+                    </p>
+                    
+                    ${sortedResults.map(result => {
+                        const score = result.score || 0;
+                        const symbol = result.symbol || '不明';
+                        const price = result.price || 0;
+                        const recommendation = result.recommendation || 'HOLD';
+                        const reasoning = result.reasoning || '分析データが不足しています';
+                        const keyFactors = result.keyFactors || [];
+                        const strategy = result.tradingStrategy || {};
+                        const change24h = result.change24h || 0;
+                        const technicalIndicators = result.technicalIndicators || {};
+                        
+                        return `
+                        <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid ${
+                            score >= 75 ? '#ff0040' : 
+                            score >= 60 ? '#ffaa00' : 
+                            'rgba(0, 255, 65, 0.3)'
+                        }; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <!-- ヘッダー情報 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h4 style="color: #00ff41; margin-bottom: 0.3rem; font-size: 1.3rem;">
+                                        ${symbol}
+                                    </h4>
+                                    <div style="color: rgba(0, 255, 65, 0.7); font-size: 0.9rem;">
+                                        現在価格: $${price.toLocaleString()} 
+                                        <span style="color: ${change24h >= 0 ? '#00ff41' : '#ff0040'}">
+                                            (${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%)
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: ${
+                                        score >= 75 ? '#ff0040' : 
+                                        score >= 60 ? '#ffaa00' : 
+                                        '#00ff41'
+                                    }">${score}点</div>
+                                    <div style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.6);">買い度指数</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 推奨アクション -->
+                            <div style="background: ${recommendation === 'BUY' ? 'rgba(0, 255, 65, 0.1)' : 'rgba(0, 0, 0, 0.3)'}; 
+                                        border: 1px solid ${recommendation === 'BUY' ? '#00ff41' : 'rgba(0, 255, 65, 0.3)'}; 
+                                        padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem;">
+                                <div style="font-weight: bold; margin-bottom: 0.3rem;">
+                                    推奨: ${
+                                        recommendation === 'BUY' ? '🟢 買い' :
+                                        recommendation === 'SELL' ? '🔴 売り' :
+                                        '🟡 様子見'
+                                    }
+                                </div>
+                                <div style="color: rgba(0, 255, 65, 0.8); font-size: 0.9rem;">
+                                    ${reasoning}
+                                </div>
+                            </div>
+                            
+                            <!-- テクニカル指標 -->
+                            ${technicalIndicators.rsi !== undefined ? `
+                            <div style="margin-bottom: 1rem;">
+                                <div style="color: #ffaa00; font-weight: bold; margin-bottom: 0.5rem;">📊 テクニカル指標</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.85rem;">
+                                    <div style="background: rgba(0, 255, 65, 0.05); padding: 0.5rem; border-radius: 4px;">
+                                        <div style="color: rgba(0, 255, 65, 0.6);">RSI</div>
+                                        <div style="color: #00ff41; font-weight: bold;">${technicalIndicators.rsi}</div>
+                                    </div>
+                                    <div style="background: rgba(0, 255, 65, 0.05); padding: 0.5rem; border-radius: 4px;">
+                                        <div style="color: rgba(0, 255, 65, 0.6);">MACD</div>
+                                        <div style="color: ${technicalIndicators.macdSignal === 'bullish' ? '#00ff41' : '#ff0040'}; font-weight: bold;">
+                                            ${technicalIndicators.macdSignal === 'bullish' ? '強気' : '弱気'}
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(0, 255, 65, 0.05); padding: 0.5rem; border-radius: 4px;">
+                                        <div style="color: rgba(0, 255, 65, 0.6);">BB位置</div>
+                                        <div style="color: #00ff41; font-weight: bold;">${technicalIndicators.bbPosition}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <!-- 主要判断根拠 -->
+                            ${keyFactors.length > 0 ? `
+                            <div style="margin-bottom: 1rem;">
+                                <div style="color: #ffaa00; font-weight: bold; margin-bottom: 0.5rem;">🎯 主要判断根拠</div>
+                                <ul style="color: rgba(0, 255, 65, 0.8); font-size: 0.85rem; padding-left: 1.5rem; line-height: 1.6;">
+                                    ${keyFactors.map(factor => `<li>${factor}</li>`).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+                            
+                            <!-- 取引戦略 -->
+                            ${strategy.entryPrice ? `
+                            <div style="background: rgba(255, 170, 0, 0.05); border: 1px solid rgba(255, 170, 0, 0.3); padding: 1rem; border-radius: 4px;">
+                                <div style="color: #ffaa00; font-weight: bold; margin-bottom: 0.8rem; font-size: 1rem;">💰 推奨取引戦略</div>
+                                
+                                <!-- エントリー戦略 -->
+                                <div style="margin-bottom: 0.8rem;">
+                                    <div style="color: rgba(0, 255, 65, 0.9); font-weight: bold; margin-bottom: 0.3rem;">📍 エントリーポイント</div>
+                                    <div style="color: rgba(0, 255, 65, 0.7); font-size: 0.85rem;">
+                                        現在価格: $${strategy.entryPrice.toLocaleString()}<br>
+                                        ${strategy.riskManagement}
+                                    </div>
+                                </div>
+                                
+                                <!-- ナンピン戦略 -->
+                                ${strategy.dcaLevels && strategy.dcaLevels.length > 0 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <div style="color: rgba(0, 255, 65, 0.9); font-weight: bold; margin-bottom: 0.3rem;">📉 ナンピン（DCA）推奨価格</div>
+                                    <div style="font-size: 0.85rem;">
+                                        ${strategy.dcaLevels.map((level, index) => `
+                                            <div style="color: rgba(0, 255, 65, 0.7); margin-bottom: 0.2rem;">
+                                                ${index + 1}. $${level.price.toFixed(2)} (${level.percentage}%) - ${level.amount}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <!-- 利確目標 -->
+                                ${strategy.takeProfitLevels && strategy.takeProfitLevels.length > 0 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <div style="color: rgba(0, 255, 65, 0.9); font-weight: bold; margin-bottom: 0.3rem;">🎯 利確目標</div>
+                                    <div style="font-size: 0.85rem;">
+                                        ${strategy.takeProfitLevels.map(tp => `
+                                            <div style="color: rgba(0, 255, 65, 0.7); margin-bottom: 0.2rem;">
+                                                第${tp.level}目標: $${tp.price.toFixed(2)} (+${tp.percentage}%) - ${tp.action}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <!-- ストップロス -->
+                                <div style="margin-bottom: 0.8rem;">
+                                    <div style="color: #ff0040; font-weight: bold; margin-bottom: 0.3rem;">🛑 ストップロス</div>
+                                    <div style="color: rgba(255, 0, 64, 0.8); font-size: 0.85rem;">
+                                        $${strategy.stopLoss.toFixed(2)} (-3%)
+                                    </div>
+                                </div>
+                                
+                                <!-- 想定保有期間 -->
+                                <div>
+                                    <div style="color: rgba(0, 255, 65, 0.9); font-weight: bold; margin-bottom: 0.3rem;">⏱ 想定保有期間</div>
+                                    <div style="color: rgba(0, 255, 65, 0.7); font-size: 0.85rem;">
+                                        ${strategy.timeframe}
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        `;
+                    }).join('')}
+                    
+                    <!-- 免責事項 -->
+                    <div style="text-align: center; margin-top: 2rem; padding: 1rem; background: rgba(255, 0, 64, 0.05); border: 1px solid rgba(255, 0, 64, 0.3); border-radius: 4px;">
+                        <p style="color: rgba(255, 0, 64, 0.8); font-size: 0.85rem; margin: 0;">
+                            ⚠️ これは参考情報です。投資判断は自己責任でお願いします。<br>
+                            必ず余剰資金で投資を行い、リスク管理を徹底してください。
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        // AI分析モーダルを閉じる
+        function closeAIAnalysis() {
+            const modal = document.getElementById('aiAnalysisModal');
+            modal.style.display = 'none';
+        }
+        
+        // モーダル外クリックで閉じる
+        document.getElementById('aiAnalysisModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAIAnalysis();
+            }
+        });
         
         // 実際のAPIからデータを取得
         async function fetchRealTimeData() {
@@ -1070,16 +1487,19 @@
                 
             } catch (error) {
                 console.error('データ取得エラー:', error);
-                // エラー時はモックデータにフォールバック
-                watchedCurrencies = watchedCurrencies.map(currency => generateMockData(currency.symbol));
-                renderCurrencies();
+                // エラー時は空の配列を保持してエラーメッセージを表示
+                const grid = document.getElementById('currencyGrid');
+                if (watchedCurrencies.length === 0) {
+                    grid.innerHTML = '<div style="text-align: center; color: rgba(0, 255, 65, 0.6); padding: 2rem;">データを取得中...</div>';
+                }
             } finally {
                 spinner.style.display = 'none';
             }
         }
         
-        // 定期更新（5秒ごと）
-        setInterval(fetchRealTimeData, 5000);
+        // 自動更新を削除 - 手動リフレッシュのみ
+        // 初回データ取得
+        fetchRealTimeData();
     </script>
 </body>
 </html>

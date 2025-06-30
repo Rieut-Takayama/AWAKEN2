@@ -24,15 +24,29 @@ class MexcService {
     private apiKey: string;
     private apiSecret: string;
     private baseUrl: string;
+    private userApiKey: string = '';
+    private userApiSecret: string = '';
 
     constructor() {
-        this.apiKey = process.env.MEXC_API_KEY || '';
-        this.apiSecret = process.env.MEXC_API_SECRET || '';
+        // デフォルトは環境変数から読み込まない（ユーザー固有のキーを使用）
+        this.apiKey = '';
+        this.apiSecret = '';
         this.baseUrl = process.env.MEXC_BASE_URL || 'https://api.mexc.com';
+    }
+
+    // ユーザーのAPIキーを設定
+    setUserCredentials(apiKey: string, apiSecret: string) {
+        this.userApiKey = apiKey;
+        this.userApiSecret = apiSecret;
     }
 
     // MEXC APIの署名を生成
     private generateSignature(params: Record<string, any>): string {
+        const secretToUse = this.userApiSecret || this.apiSecret;
+        if (!secretToUse) {
+            throw new Error('API Secret not configured');
+        }
+        
         const timestamp = Date.now();
         const queryString = Object.entries({ ...params, timestamp })
             .sort(([a], [b]) => a.localeCompare(b))
@@ -40,7 +54,7 @@ class MexcService {
             .join('&');
 
         return crypto
-            .createHmac('sha256', this.apiSecret)
+            .createHmac('sha256', secretToUse)
             .update(queryString)
             .digest('hex');
     }
@@ -155,6 +169,47 @@ class MexcService {
         } catch (error) {
             console.error(`Error fetching candle data for ${symbol}:`, error);
             return [];
+        }
+    }
+
+    // 複数時間足データを一括取得（優先度順：15m, 30m, 1h, 1d, 5m）
+    async getMultiTimeframeData(symbol: string): Promise<{[key: string]: CandleData[]}> {
+        const timeframes = ['15m', '30m', '1h', '1d', '5m'];
+        const limits = {
+            '15m': 100,  // 15分足: 約25時間分
+            '30m': 100,  // 30分足: 約2日分  
+            '1h': 100,   // 1時間足: 約4日分
+            '1d': 100,   // 日足: 約3ヶ月分
+            '5m': 288    // 5分足: 24時間分（288本）
+        };
+
+        const results: {[key: string]: CandleData[]} = {};
+        
+        try {
+            // 並列でデータ取得して高速化
+            const promises = timeframes.map(async (interval) => {
+                const data = await this.getCandleData(symbol, interval, limits[interval as keyof typeof limits] || 100);
+                return { interval, data };
+            });
+
+            const responses = await Promise.all(promises);
+            
+            responses.forEach(({ interval, data }) => {
+                results[interval] = data;
+            });
+
+            console.log(`✅ 複数時間足データ取得完了 ${symbol}:`, {
+                '15m': results['15m']?.length || 0,
+                '30m': results['30m']?.length || 0, 
+                '1h': results['1h']?.length || 0,
+                '1d': results['1d']?.length || 0,
+                '5m': results['5m']?.length || 0
+            });
+
+            return results;
+        } catch (error) {
+            console.error(`複数時間足データ取得エラー ${symbol}:`, error);
+            return {};
         }
     }
 

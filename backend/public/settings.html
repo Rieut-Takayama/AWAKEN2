@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AWAKEN2 - 通知設定</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="/js/header.js"></script>
     
     <style>
         * {
@@ -705,6 +706,54 @@
             font-family: 'Orbitron', monospace;
         }
 
+        /* 小さいトグルスイッチ */
+        .toggle-switch-small {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch-small input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider-small {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 0, 64, 0.3);
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 0, 64, 0.5);
+        }
+
+        .toggle-slider-small:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch-small input:checked + .toggle-slider-small {
+            background-color: rgba(0, 255, 65, 0.3);
+            border-color: var(--matrix-green);
+        }
+
+        .toggle-switch-small input:checked + .toggle-slider-small:before {
+            transform: translateX(20px);
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 0.8rem;
@@ -770,6 +819,69 @@
     <main class="main-container">
         <h1 class="dashboard-title">かんたん設定</h1>
         
+        <!-- 設定完了ステータス -->
+        <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid var(--matrix-green); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 style="color: var(--matrix-green); font-size: 1.1rem; margin-bottom: 1rem;">📋 設定チェックリスト</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+                <div id="claudeCheckStatus">⬜ Claude AI設定</div>
+                <div id="mexcCheckStatus">⬜ MEXC API設定</div>
+                <div id="telegramCheckStatus">⬜ Telegram設定</div>
+                <div id="symbolCheckStatus">⬜ 監視銘柄選択</div>
+                <div id="alertCheckStatus">⬜ 通知設定</div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 255, 65, 0.3);">
+                <p style="color: rgba(0, 255, 65, 0.7); margin: 0; font-size: 0.85rem;">
+                    ✅ すべて設定すると、24時間365日自動で仮想通貨を監視します
+                </p>
+            </div>
+        </div>
+
+        <!-- Claude AI設定（新規追加） -->
+        <div class="card-matrix" style="border-color: #ff0040;">
+            <h2 class="section-title" style="color: #ff0040;">Claude AI設定 <span style="font-size: 0.8rem; color: #ff0040;">（必須）</span></h2>
+            <p style="color: rgba(255, 0, 64, 0.8); font-size: 0.9rem; margin-bottom: 1rem;">
+                ⚠️ <strong>このツールはClaude AIを使用して市場分析を行います。</strong><br>
+                Claude APIキーがないと分析機能は動作しません。<br>
+                APIキーは<a href="https://console.anthropic.com/" target="_blank" style="color: #ffaa00;">Anthropic Console</a>から取得できます（初回5ドルのデポジットが必要）。
+            </p>
+            
+            <div class="input-group">
+                <label for="claudeApiKey">Claude APIキー <span style="color: #ff0040;">*</span></label>
+                <div style="position: relative;">
+                    <input type="password" id="claudeApiKey" class="input-matrix api-key" 
+                           placeholder="sk-ant-api03-..." value=""
+                           style="border-color: #ff0040;">
+                    <div id="claudeConfiguredStatus" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; background: rgba(0, 0, 0, 0.8); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+                        ✅ 設定済み
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="window.saveClaudeSettings ? saveClaudeSettings() : alert('関数が読み込まれていません')" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 0.8rem 2rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>💾</span>
+                    Claude AI設定を保存
+                </button>
+                <div class="status-message success" id="claudeStatusMessage" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; background: rgba(0, 255, 65, 0.1); color: var(--matrix-green); border: 1px solid var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green);">
+                    ✓ 設定を保存しました
+                </div>
+            </div>
+        </div>
+
         <!-- 買い度スコア閾値設定 -->
         <div class="card-matrix">
             <h2 class="section-title">通知する買いシグナルの強さ</h2>
@@ -805,6 +917,26 @@
                 </div>
             </div>
             
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="saveThresholdSettings()" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 0.8rem 2rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>💾</span>
+                    通知設定を保存
+                </button>
+            </div>
         </div>
 
         <!-- MEXC API設定 -->
@@ -818,24 +950,55 @@
             
             <div class="input-group">
                 <label for="apiKey">APIキー <a href="#" onclick="showApiHelp(); return false;" style="color: #ffaa00; text-decoration: none; font-size: 0.8rem;">（これは何？）</a></label>
-                <input type="text" id="apiKey" class="input-matrix api-key" 
-                       placeholder="mx0vgl..." value="">
+                <div style="position: relative;">
+                    <input type="text" id="apiKey" class="input-matrix api-key" 
+                           placeholder="mx0vgl..." value="">
+                    <div id="mexcApiConfiguredStatus" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; background: rgba(0, 0, 0, 0.8); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+                        ✅ 設定済み
+                    </div>
+                </div>
             </div>
             
             <div class="input-group">
                 <label for="apiSecret">APIシークレット <span style="color: #ffaa00; font-size: 0.8rem;">（暗号化保存）</span></label>
-                <input type="password" id="apiSecret" class="input-matrix api-key" 
-                       placeholder="••••••••" value="">
+                <div style="position: relative;">
+                    <input type="password" id="apiSecret" class="input-matrix api-key" 
+                           placeholder="••••••••" value="">
+                    <div id="mexcSecretConfiguredStatus" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; background: rgba(0, 0, 0, 0.8); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+                        ✅ 設定済み
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="saveMEXCSettings()" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 0.8rem 2rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>💾</span>
+                    API設定を保存
+                </button>
             </div>
         </div>
 
         <!-- 監視銘柄選択 -->
         <div class="card-matrix">
-            <h2 class="section-title">監視する仮想通貨 <span style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7); font-weight: 400;">（最大3個）</span></h2>
+            <h2 class="section-title">監視する仮想通貨 <span style="font-size: 0.9rem; color: rgba(0, 255, 65, 0.7); font-weight: 400;">（最大3通貨まで）</span></h2>
             <p style="color: rgba(0, 255, 65, 0.7); font-size: 0.9rem; margin-bottom: 1rem;">
                 💡 <strong>選んだ仮想通貨を24時間365日自動で監視します。</strong><br>
-                3つまで選べるので、興味のある通貨や、よく取引する通貨を選んでください。<br>
-                ミームコインセット：高リスク高リターンの人気コイン｜メジャーセット：安定した大手コイン
+                最大3通貨まで同時監視が可能です。<br>
+                <span style="color: #ffaa00;">※ 複数選択すると通知頻度が増える可能性があります</span>
             </p>
             <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button onclick="addPopularMemeCoins()" style="background: rgba(255, 0, 64, 0.2); border: 1px solid #ff0040; color: #ff0040; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">🚀 人気ミームコイン追加</button>
@@ -852,6 +1015,27 @@
             
             <div id="selectedSymbols" style="margin-top: 1rem;">
                 <!-- 動的に生成される銘柄カード -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="saveSymbolSettings()" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 0.8rem 2rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>💾</span>
+                    銘柄設定を保存
+                </button>
             </div>
         </div>
 
@@ -881,14 +1065,24 @@
                 
                 <div class="input-group">
                     <label for="telegramToken">ボットトークン <span style="color: rgba(0, 255, 65, 0.6); font-size: 0.8rem;">（BotFatherから取得）</span></label>
-                    <input type="text" id="telegramToken" class="input-matrix api-key" 
-                           placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz..." value="">
+                    <div style="position: relative;">
+                        <input type="text" id="telegramToken" class="input-matrix api-key" 
+                               placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz..." value="">
+                        <div id="telegramTokenConfiguredStatus" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; background: rgba(0, 0, 0, 0.8); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+                            ✅ 設定済み
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="input-group">
                     <label for="chatId">チャットID <span style="color: rgba(0, 255, 65, 0.6); font-size: 0.8rem;">（ボットとの会話から取得）</span></label>
-                    <input type="text" id="chatId" class="input-matrix api-key" 
-                           placeholder="123456789" value="">
+                    <div style="position: relative;">
+                        <input type="text" id="chatId" class="input-matrix api-key" 
+                               placeholder="123456789" value="">
+                        <div id="chatIdConfiguredStatus" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; background: rgba(0, 0, 0, 0.8); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+                            ✅ 設定済み
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid var(--warning-orange); border-radius: 4px; padding: 1rem; margin-top: 1rem;">
@@ -902,38 +1096,300 @@
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 2rem;">
-                <button onclick="testTelegramConnection()" style="
-                    background: linear-gradient(135deg, #00aaff, #0088dd);
-                    border: 2px solid #00aaff;
-                    color: white;
-                    padding: 1rem 3rem;
+            <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button onclick="saveTelegramSettings()" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 1rem 2rem;
                     border-radius: 8px;
                     cursor: pointer;
-                    font-size: 1.1rem;
+                    font-size: 1rem;
                     font-weight: 700;
                     font-family: 'M PLUS 1 Code', monospace;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                     transition: all 0.3s ease;
-                    box-shadow: 0 4px 20px rgba(0, 170, 255, 0.3);
+                    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
                     display: inline-flex;
                     align-items: center;
                     gap: 0.5rem;
                 ">
-                    <span style="font-size: 1.2rem;">📱</span>
-                    Telegram接続テスト
+                    <span>💾</span>
+                    Telegram設定を保存
+                </button>
+                
+                <button onclick="testTelegramConnection(event)" style="
+                    background: rgba(255, 170, 0, 0.2);
+                    border: 1px solid #ffaa00;
+                    color: #ffaa00;
+                    padding: 1rem 2rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 700;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>🚀</span>
+                    テスト送信
+                </button>
+                
+                <button onclick="testTelegramWithSaved(event)" id="testWithSavedBtn" style="
+                    background: rgba(0, 170, 255, 0.2);
+                    border: 1px solid #00aaff;
+                    color: #00aaff;
+                    padding: 1rem 2rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 700;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+                    display: none;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>📤</span>
+                    保存済み設定でテスト
                 </button>
             </div>
         </div>
 
-        <!-- 保存ボタン -->
-        <div class="save-section">
-            <button class="save-btn" onclick="saveSettings()">設定を保存</button>
-            <div class="status-message success" id="statusMessage" style="display: none;">
-                ✓ 設定を保存しました
+        <!-- 詳細通知設定 -->
+        <div class="card-matrix" style="border-color: #ffaa00;">
+            <h2 class="section-title" style="color: #ffaa00;">🎯 詳細通知設定（上級者向け）</h2>
+            
+            <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid #ffaa00; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                <h3 style="color: #ffaa00; font-size: 1rem; margin-bottom: 0.5rem;">📊 通知の使い分けガイド</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+                    <div>
+                        <strong style="color: var(--matrix-green);">🎯 買い度スコア（メイン）</strong><br>
+                        <span style="color: rgba(0, 255, 65, 0.7);">
+                        • 総合的な買いチャンスを判定<br>
+                        • AIによる深い分析<br>
+                        • 初心者におすすめ
+                        </span>
+                    </div>
+                    <div>
+                        <strong style="color: #ffaa00;">⚡ 詳細通知（サブ）</strong><br>
+                        <span style="color: rgba(255, 170, 0, 0.7);">
+                        • 特定の値動きを即座に通知<br>
+                        • AIコスト0円で高速<br>
+                        • 上級者向けの細かい設定
+                        </span>
+                    </div>
+                </div>
             </div>
-            <a href="/dashboard.html" class="settings-btn" id="dashboardBtn" style="margin-top: 1rem; display: none;">ダッシュボードに戻る</a>
+            
+            <p style="color: rgba(0, 255, 65, 0.7); font-size: 0.9rem; margin-bottom: 1rem;">
+                💡 <strong>買い度スコア以外の重要なシグナルも個別に通知できます。</strong><br>
+                各シグナルをON/OFFして、自分好みの通知設定にカスタマイズしましょう。
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                <!-- 急騰アラート -->
+                <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: var(--matrix-green); margin: 0;">🚀 急騰アラート</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="surgeAlert" checked>
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(0, 255, 65, 0.7); margin: 0;">
+                        5分間で設定値以上の急上昇を検知
+                    </p>
+                    <input type="number" id="surgeThreshold" class="threshold-input" 
+                           value="2.0" min="0.1" max="20" step="0.1"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(0, 255, 65, 0.7);">%</span>
+                </div>
+
+                <!-- 急落アラート -->
+                <div style="background: rgba(255, 0, 64, 0.05); border: 1px solid rgba(255, 0, 64, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: var(--danger-red); margin: 0;">📉 急落アラート</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="dropAlert" checked>
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255, 0, 64, 0.7); margin: 0;">
+                        5分間で設定値以上の急落を検知（買い時の可能性）
+                    </p>
+                    <input type="number" id="dropThreshold" class="threshold-input" 
+                           value="2.0" min="0.1" max="20" step="0.1"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--danger-red); color: var(--danger-red); padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(255, 0, 64, 0.7);">%</span>
+                </div>
+
+                <!-- 出来高爆発 -->
+                <div style="background: rgba(255, 170, 0, 0.05); border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: var(--warning-orange); margin: 0;">💥 出来高爆発</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="volumeAlert" checked>
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255, 170, 0, 0.7); margin: 0;">
+                        通常の設定倍以上の出来高を検知
+                    </p>
+                    <input type="number" id="volumeMultiplier" class="threshold-input" 
+                           value="2.0" min="1.5" max="10" step="0.1"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--warning-orange); color: var(--warning-orange); padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(255, 170, 0, 0.7);">倍</span>
+                </div>
+
+                <!-- ボラティリティ -->
+                <div style="background: rgba(0, 170, 255, 0.05); border: 1px solid rgba(0, 170, 255, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #00aaff; margin: 0;">⚡ 高ボラティリティ</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="volatilityAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(0, 170, 255, 0.7); margin: 0;">
+                        価格変動率が設定値以上を検知
+                    </p>
+                    <input type="number" id="volatilityThreshold" class="threshold-input" 
+                           value="5.0" min="0.5" max="30" step="0.1"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid #00aaff; color: #00aaff; padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(0, 170, 255, 0.7);">%</span>
+                </div>
+
+                <!-- 停滞アラート -->
+                <div style="background: rgba(128, 128, 128, 0.05); border: 1px solid rgba(128, 128, 128, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #808080; margin: 0;">😴 停滞アラート</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="stagnationAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(128, 128, 128, 0.7); margin: 0;">
+                        2時間以上価格変動なし
+                    </p>
+                    <input type="number" id="stagnationHours" class="threshold-input" 
+                           value="2" min="1" max="12" step="0.5"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid #808080; color: #808080; padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(128, 128, 128, 0.7);">時間</span>
+                </div>
+
+                <!-- 往復ビンタ -->
+                <div style="background: rgba(255, 0, 255, 0.05); border: 1px solid rgba(255, 0, 255, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #ff00ff; margin: 0;">🌊 往復ビンタ</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="whipsawAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255, 0, 255, 0.7); margin: 0;">
+                        短時間で2回以上の上下動
+                    </p>
+                    <input type="number" id="whipsawCount" class="threshold-input" 
+                           value="2" min="2" max="5" step="1"
+                           style="width: 80px; margin-top: 0.5rem; background: rgba(0, 0, 0, 0.5); border: 1px solid #ff00ff; color: #ff00ff; padding: 0.3rem; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(255, 0, 255, 0.7);">回</span>
+                </div>
+
+                <!-- サポート/レジスタンス -->
+                <div style="background: rgba(0, 255, 255, 0.05); border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #00ffff; margin: 0;">🎯 S/R突破</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="supportResistanceAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(0, 255, 255, 0.7); margin: 0;">
+                        重要価格帯の突破を検知
+                    </p>
+                </div>
+
+                <!-- 連続陽線/陰線 -->
+                <div style="background: rgba(255, 255, 0, 0.05); border: 1px solid rgba(255, 255, 0, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #ffff00; margin: 0;">📊 連続陽線/陰線</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="consecutiveBarsAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255, 255, 0, 0.7); margin: 0;">
+                        連続した上昇/下落を検知
+                    </p>
+                </div>
+
+                <!-- 出来高枯渇 -->
+                <div style="background: rgba(128, 0, 128, 0.05); border: 1px solid rgba(128, 0, 128, 0.3); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="color: #800080; margin: 0;">🏜️ 出来高枯渇</h4>
+                        <label class="toggle-switch-small">
+                            <input type="checkbox" id="volumeDryUpAlert">
+                            <span class="toggle-slider-small"></span>
+                        </label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(128, 0, 128, 0.7); margin: 0;">
+                        極端に少ない出来高を検知
+                    </p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button onclick="saveAlertSettings()" style="
+                    background: rgba(0, 255, 65, 0.2);
+                    border: 1px solid #00ff41;
+                    color: #00ff41;
+                    padding: 0.8rem 2rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    font-family: 'M PLUS 1 Code', monospace;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                ">
+                    <span>💾</span>
+                    詳細通知設定を保存
+                </button>
+            </div>
+        </div>
+
+        <!-- ダッシュボードに戻る -->
+        <div style="text-align: center; margin-top: 3rem; margin-bottom: 2rem;">
+            <a href="/dashboard.html" style="
+                background: rgba(0, 170, 255, 0.2);
+                border: 1px solid #00aaff;
+                color: #00aaff;
+                padding: 0.8rem 2rem;
+                border-radius: 4px;
+                text-decoration: none;
+                font-size: 0.95rem;
+                font-weight: 600;
+                font-family: 'M PLUS 1 Code', monospace;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <span>🏠</span>
+                ダッシュボードに戻る
+            </a>
         </div>
     </main>
 
@@ -941,7 +1397,9 @@
         // 認証チェック
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/';
+            window.location.href = '/login';
+            // ここで処理を止める
+            throw new Error('No authentication token');
         }
 
         // ログアウト機能
@@ -1018,7 +1476,7 @@
             }
         });
         
-        // 銘柄選択
+        // 銘柄選択（1通貨のみ！）
         function selectSymbol(symbol) {
             if (selectedSymbols.length < 3) {
                 const symbolPair = symbol + '/USDT';
@@ -1027,7 +1485,7 @@
                     renderSelectedSymbols();
                 }
             } else {
-                alert('最大3銘柄まで選択可能です');
+                alert('⚠️ 最大3通貨まで選択可能です');
             }
             symbolInput.value = '';
             symbolSuggestions.style.display = 'none';
@@ -1074,23 +1532,17 @@
             }).join('');
         }
         
-        // 人気ミームコインを追加
+        // 人気ミームコインを追加（1通貨のみ！）
         function addPopularMemeCoins() {
-            const memeCoins = ['PEPE', 'SHIB', 'DOGE'];
             selectedSymbols = []; // 一旦クリア
-            memeCoins.forEach(coin => {
-                selectedSymbols.push({ symbol: coin + '/USDT', interval: 30 }); // ミームコインは30分デフォルト
-            });
+            selectedSymbols.push({ symbol: 'PEPE/USDT', interval: 30 }); // PEPEのみ
             renderSelectedSymbols();
         }
         
-        // メジャーコインを追加
+        // メジャーコインを追加（1通貨のみ！）
         function addMajorCoins() {
-            const majorCoins = ['BTC', 'ETH', 'BNB'];
             selectedSymbols = []; // 一旦クリア
-            majorCoins.forEach(coin => {
-                selectedSymbols.push({ symbol: coin + '/USDT', interval: 60 }); // メジャーコインは60分デフォルト
-            });
+            selectedSymbols.push({ symbol: 'BTC/USDT', interval: 60 }); // BTCのみ
             renderSelectedSymbols();
         }
         
@@ -1101,8 +1553,231 @@
             }
         });
         
-        // Telegram接続テスト
-        async function testTelegramConnection() {
+        // Claude AI設定の保存
+        window.saveClaudeSettings = async function() {
+            console.log('saveClaudeSettings called');
+            const apiKey = document.getElementById('claudeApiKey').value;
+            console.log('API Key length:', apiKey ? apiKey.length : 0);
+            
+            if (!apiKey) {
+                alert('⚠️ Claude APIキーを入力してください');
+                return;
+            }
+            
+            try {
+                // 現在の設定を取得
+                console.log('Loading current settings...');
+                const currentSettings = await loadSettings();
+                console.log('Current settings loaded:', currentSettings);
+                
+                // Claude設定のみ更新して全体を保存
+                const requestBody = {
+                    ...currentSettings,
+                    claude: {
+                        apiKey: apiKey
+                    }
+                };
+                console.log('Sending request to /api/settings');
+                
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    // 保存成功時の処理
+                    const claudeInput = document.getElementById('claudeApiKey');
+                    const claudeStatusDiv = document.getElementById('claudeConfiguredStatus');
+                    const claudeStatusMessage = document.getElementById('claudeStatusMessage');
+                    
+                    // 保存したキーの一部を表示
+                    const savedKey = apiKey.substring(0, 10) + '***';
+                    
+                    // 入力欄をクリア
+                    claudeInput.value = '';
+                    claudeInput.placeholder = '新しいキーを入力して変更';
+                    
+                    // 設定済み表示を更新
+                    if (claudeStatusDiv) {
+                        claudeStatusDiv.textContent = `✅ 設定済み (${savedKey})`;
+                        claudeStatusDiv.style.display = 'block';
+                    }
+                    
+                    // 成功メッセージ表示
+                    if (claudeStatusMessage) {
+                        claudeStatusMessage.textContent = `✅ Claude AI設定を保存しました！ (${savedKey})`;
+                        claudeStatusMessage.style.display = 'block';
+                        setTimeout(() => {
+                            claudeStatusMessage.style.display = 'none';
+                        }, 3000);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    console.error('Save failed:', errorData);
+                    alert('❌ Claude AI設定の保存に失敗しました: ' + (errorData.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Claude設定保存エラー:', error);
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // MEXC API設定の保存
+        async function saveMEXCSettings() {
+            const apiKey = document.getElementById('apiKey').value;
+            const apiSecret = document.getElementById('apiSecret').value;
+            
+            if (!apiKey || !apiSecret) {
+                alert('⚠️ APIキーとAPIシークレットを入力してください');
+                return;
+            }
+            
+            try {
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                // MEXC設定のみ更新して全体を保存
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        mexc: {
+                            apiKey: apiKey,
+                            apiSecret: apiSecret
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    // 保存成功時の処理
+                    const apiKeyInput = document.getElementById('apiKey');
+                    const apiSecretInput = document.getElementById('apiSecret');
+                    
+                    // 保存したキーの一部を表示
+                    const savedApiKey = apiKey.substring(0, 10) + '***';
+                    
+                    // 入力欄をクリア
+                    apiKeyInput.value = '';
+                    apiKeyInput.placeholder = '新しいキーを入力して変更';
+                    apiSecretInput.value = '';
+                    apiSecretInput.placeholder = '新しいシークレットを入力して変更';
+                    
+                    // 設定済み表示を更新
+                    const mexcApiStatus = document.getElementById('mexcApiConfiguredStatus');
+                    const mexcSecretStatus = document.getElementById('mexcSecretConfiguredStatus');
+                    if (mexcApiStatus) {
+                        mexcApiStatus.textContent = `✅ 設定済み (${savedApiKey})`;
+                        mexcApiStatus.style.display = 'block';
+                    }
+                    if (mexcSecretStatus) {
+                        mexcSecretStatus.textContent = '✅ 設定済み (暗号化保存)';
+                        mexcSecretStatus.style.display = 'block';
+                    }
+                    
+                    // 成功メッセージを表示（ボタンの下に追加）
+                    const mexcSection = apiKeyInput.closest('.card-matrix');
+                    let mexcStatusMessage = mexcSection.querySelector('#mexcStatusMessage');
+                    if (!mexcStatusMessage) {
+                        // メッセージ要素がなければ作成
+                        mexcStatusMessage = document.createElement('div');
+                        mexcStatusMessage.id = 'mexcStatusMessage';
+                        mexcStatusMessage.className = 'status-message success';
+                        mexcStatusMessage.style.cssText = 'display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; background: rgba(0, 255, 65, 0.1); color: var(--matrix-green); border: 1px solid var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green); text-align: center;';
+                        const buttonContainer = mexcSection.querySelector('div[style*="text-align: center"]');
+                        buttonContainer.appendChild(mexcStatusMessage);
+                    }
+                    
+                    mexcStatusMessage.textContent = `✅ MEXC API設定を保存しました！ (${savedApiKey})`;
+                    mexcStatusMessage.style.display = 'block';
+                    setTimeout(() => {
+                        mexcStatusMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert('❌ MEXC API設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // 通知閾値設定の保存
+        async function saveThresholdSettings() {
+            const threshold = parseInt(thresholdSlider.value);
+            
+            try {
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                // 通知設定のみ更新して全体を保存
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        threshold: threshold,
+                        notificationsEnabled: notificationToggle.checked
+                    })
+                });
+                
+                if (response.ok) {
+                    showSaveSuccess('通知設定を保存しました！');
+                } else {
+                    alert('❌ 通知設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // 銘柄設定の保存
+        async function saveSymbolSettings() {
+            if (selectedSymbols.length === 0) {
+                alert('⚠️ 最低1つの銘柄を選択してください');
+                return;
+            }
+            
+            try {
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                // 銘柄設定のみ更新して全体を保存
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        symbolsWithIntervals: selectedSymbols
+                    })
+                });
+                
+                if (response.ok) {
+                    showSaveSuccess('銘柄設定を保存しました！');
+                } else {
+                    alert('❌ 銘柄設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // Telegram設定の保存
+        async function saveTelegramSettings() {
             const token = document.getElementById('telegramToken').value;
             const chatId = document.getElementById('chatId').value;
             
@@ -1110,6 +1785,485 @@
                 alert('⚠️ ボットトークンとチャットIDを入力してください');
                 return;
             }
+            
+            try {
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                // Telegram設定のみ更新して全体を保存
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        telegram: {
+                            token: token,
+                            chatId: chatId
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    // 保存成功時の表示更新
+                    const savedToken = token.substring(0, 10) + '***';
+                    const telegramTokenStatus = document.getElementById('telegramTokenConfiguredStatus');
+                    const chatIdStatus = document.getElementById('chatIdConfiguredStatus');
+                    
+                    if (telegramTokenStatus) {
+                        telegramTokenStatus.textContent = `✅ 設定済み (${savedToken})`;
+                        telegramTokenStatus.style.display = 'block';
+                    }
+                    if (chatIdStatus) {
+                        chatIdStatus.textContent = `✅ 設定済み (${chatId})`;
+                        chatIdStatus.style.display = 'block';
+                    }
+                    
+                    // 入力フィールドをクリア
+                    document.getElementById('telegramToken').value = '';
+                    document.getElementById('telegramToken').placeholder = '新しいトークンを入力して変更';
+                    document.getElementById('chatId').value = '';
+                    document.getElementById('chatId').placeholder = '新しいチャットIDを入力して変更';
+                    
+                    // 保存済み設定でテストボタンを表示
+                    const testWithSavedBtn = document.getElementById('testWithSavedBtn');
+                    if (testWithSavedBtn) {
+                        testWithSavedBtn.style.display = 'inline-flex';
+                    }
+                    
+                    showSaveSuccess('Telegram設定を保存しました！');
+                } else {
+                    alert('❌ Telegram設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // 保存成功メッセージ表示
+        window.showSaveSuccess = function(message) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = '✅ ' + message;
+            statusMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // APIヘルプ表示
+        function showApiHelp() {
+            alert('APIキーとは？\n\nMEXC取引所があなたのアプリに価格データを提供するための「パスワード」のようなものです。\n\n【安全性について】\n・「読み取り専用」で作成するので、資産の移動はできません\n・価格データの取得のみに使用されます\n\n【取得方法】\n1. MEXCにログイン\n2. セキュリティ → API管理へ\n3. 「APIキーを作成」をクリック\n4. 権限は「読み取り」のみにチェック\n5. 作成されたキーとシークレットをコピー\n\n※シークレットは一度しか表示されないので必ず保存してください');
+        }
+        
+        // Telegramヘルプ表示
+        function showTelegramHelp() {
+            alert('【Telegram通知の詳しい設定方法】\n\n📱 ステップ1：ボット作成\n1. Telegramアプリを開く\n2. 検索バーで「@BotFather」を検索\n3. 「開始」をタップ\n4. 「/newbot」と送信\n5. ボットの名前を入力（例：My Trading Bot）\n6. ボットのユーザー名を入力（例：mytrading_bot）\n7. 表示されるトークンをコピー\n\n📱 ステップ2：チャットID取得\n1. 作成したボットを検索して開く\n2. 「開始」または「/start」を送信\n3. 「@userinfobot」を検索して開く\n4. 表示される「Id: 」の数字をコピー\n\n✅ ステップ3：このページで設定\n1. トークンとチャットIDを入力\n2. 「接続テスト」ボタンで確認\n3. 設定を保存\n\n※トークンは他人に教えないでください！');
+        }
+        
+        
+        // 設定を読み込む関数
+        window.loadSettings = async function() {
+            try {
+                const response = await fetch('/api/settings', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    return result.data || {};
+                }
+                return {};
+            } catch (error) {
+                console.error('設定読み込みエラー:', error);
+                return {};
+            }
+        }
+        
+        // 詳細通知設定の保存
+        async function saveAlertSettings() {
+            try {
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                // 詳細通知設定を収集
+                const alertConfig = {
+                    enabled: document.getElementById('notificationToggle').checked,
+                    surgeAlert: document.getElementById('surgeAlert').checked,
+                    dropAlert: document.getElementById('dropAlert').checked,
+                    volumeAlert: document.getElementById('volumeAlert').checked,
+                    volatilityAlert: document.getElementById('volatilityAlert').checked,
+                    stagnationAlert: document.getElementById('stagnationAlert').checked,
+                    whipsawAlert: document.getElementById('whipsawAlert').checked,
+                    supportResistanceAlert: document.getElementById('supportResistanceAlert').checked,
+                    consecutiveBarsAlert: document.getElementById('consecutiveBarsAlert').checked,
+                    volumeDryUpAlert: document.getElementById('volumeDryUpAlert').checked,
+                    surgeThreshold: parseFloat(document.getElementById('surgeThreshold').value),
+                    dropThreshold: parseFloat(document.getElementById('dropThreshold').value),
+                    volumeMultiplier: parseFloat(document.getElementById('volumeMultiplier').value),
+                    volatilityThreshold: parseFloat(document.getElementById('volatilityThreshold').value),
+                    stagnationHours: parseFloat(document.getElementById('stagnationHours').value),
+                    whipsawCount: parseInt(document.getElementById('whipsawCount').value)
+                };
+                
+                // 設定を保存
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        alertConfig: alertConfig
+                    })
+                });
+                
+                if (response.ok) {
+                    showSaveSuccess('詳細通知設定を保存しました！');
+                } else {
+                    alert('❌ 詳細通知設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // チェックリストの更新
+        function updateChecklist() {
+            // Claude AI
+            const claudeStatus = document.getElementById('claudeConfiguredStatus');
+            const claudeCheck = document.getElementById('claudeCheckStatus');
+            if (claudeStatus && claudeStatus.style.display !== 'none') {
+                claudeCheck.innerHTML = '✅ Claude AI設定';
+                claudeCheck.style.color = '#00ff41';
+            }
+            
+            // MEXC API
+            const mexcStatus = document.getElementById('mexcApiConfiguredStatus');
+            const mexcCheck = document.getElementById('mexcCheckStatus');
+            if (mexcStatus && mexcStatus.style.display !== 'none') {
+                mexcCheck.innerHTML = '✅ MEXC API設定';
+                mexcCheck.style.color = '#00ff41';
+            }
+            
+            // Telegram
+            const telegramStatus = document.getElementById('telegramTokenConfiguredStatus');
+            const telegramCheck = document.getElementById('telegramCheckStatus');
+            if (telegramStatus && telegramStatus.style.display !== 'none') {
+                telegramCheck.innerHTML = '✅ Telegram設定';
+                telegramCheck.style.color = '#00ff41';
+            }
+            
+            // 監視銘柄
+            const symbolCheck = document.getElementById('symbolCheckStatus');
+            if (selectedSymbols.length > 0) {
+                symbolCheck.innerHTML = `✅ 監視銘柄選択（${selectedSymbols.length}通貨）`;
+                symbolCheck.style.color = '#00ff41';
+            }
+            
+            // 通知設定
+            const notificationToggle = document.getElementById('notificationToggle');
+            const alertCheck = document.getElementById('alertCheckStatus');
+            if (notificationToggle && notificationToggle.checked) {
+                alertCheck.innerHTML = '✅ 通知設定';
+                alertCheck.style.color = '#00ff41';
+            }
+        }
+        
+        // 初期設定読み込み
+        async function loadInitialSettings() {
+            try {
+                const settings = await loadSettings();
+                
+                // Claude API設定状態の表示
+                if (settings.claude?.isConfigured) {
+                    const statusDiv = document.getElementById('claudeConfiguredStatus');
+                    if (statusDiv) {
+                        if (settings.claude.maskedApiKey) {
+                            statusDiv.textContent = `✅ 設定済み (${settings.claude.maskedApiKey})`;
+                        } else {
+                            statusDiv.textContent = '✅ 設定済み';
+                        }
+                        statusDiv.style.display = 'block';
+                    }
+                    // プレースホルダーを変更
+                    const input = document.getElementById('claudeApiKey');
+                    if (input) {
+                        input.placeholder = '新しいキーを入力して変更';
+                    }
+                }
+                
+                // MEXC API設定状態の表示
+                if (settings.mexc?.isConfigured) {
+                    const mexcApiStatus = document.getElementById('mexcApiConfiguredStatus');
+                    const mexcSecretStatus = document.getElementById('mexcSecretConfiguredStatus');
+                    if (mexcApiStatus) {
+                        if (settings.mexc.maskedApiKey) {
+                            mexcApiStatus.textContent = `✅ 設定済み (${settings.mexc.maskedApiKey})`;
+                        } else {
+                            mexcApiStatus.textContent = '✅ 設定済み';
+                        }
+                        mexcApiStatus.style.display = 'block';
+                    }
+                    if (mexcSecretStatus) {
+                        mexcSecretStatus.textContent = '✅ 設定済み (暗号化保存)';
+                        mexcSecretStatus.style.display = 'block';
+                    }
+                    const apiKeyInput = document.getElementById('apiKey');
+                    const apiSecretInput = document.getElementById('apiSecret');
+                    if (apiKeyInput) apiKeyInput.placeholder = '新しいキーを入力して変更';
+                    if (apiSecretInput) apiSecretInput.placeholder = '新しいシークレットを入力して変更';
+                }
+                
+                // Telegram設定状態の表示
+                if (settings.telegram?.isConfigured) {
+                    const telegramTokenStatus = document.getElementById('telegramTokenConfiguredStatus');
+                    const chatIdStatus = document.getElementById('chatIdConfiguredStatus');
+                    if (telegramTokenStatus) {
+                        if (settings.telegram.maskedToken) {
+                            telegramTokenStatus.textContent = `✅ 設定済み (${settings.telegram.maskedToken})`;
+                        } else {
+                            telegramTokenStatus.textContent = '✅ 設定済み';
+                        }
+                        telegramTokenStatus.style.display = 'block';
+                    }
+                    if (chatIdStatus) {
+                        if (settings.telegram.maskedChatId) {
+                            chatIdStatus.textContent = `✅ 設定済み (${settings.telegram.maskedChatId})`;
+                        } else {
+                            chatIdStatus.textContent = '✅ 設定済み';
+                        }
+                        chatIdStatus.style.display = 'block';
+                    }
+                    const tokenInput = document.getElementById('telegramToken');
+                    const chatIdInput = document.getElementById('chatId');
+                    if (tokenInput) tokenInput.placeholder = '新しいトークンを入力して変更';
+                    if (chatIdInput) chatIdInput.placeholder = '新しいチャットIDを入力して変更';
+                    
+                    // 保存済み設定でテストボタンを表示
+                    const testWithSavedBtn = document.getElementById('testWithSavedBtn');
+                    if (testWithSavedBtn) {
+                        testWithSavedBtn.style.display = 'inline-flex';
+                    }
+                }
+                
+                // その他の設定を復元
+                if (settings.threshold) {
+                    thresholdSlider.value = settings.threshold;
+                    thresholdDisplay.textContent = settings.threshold;
+                }
+                
+                if (settings.notificationsEnabled !== undefined) {
+                    notificationToggle.checked = settings.notificationsEnabled;
+                    notificationStatus.textContent = settings.notificationsEnabled ? 'ON' : 'OFF';
+                    notificationStatus.style.color = settings.notificationsEnabled ? '#00ff41' : '#ff0040';
+                }
+                
+                if (settings.symbolsWithIntervals) {
+                    selectedSymbols = settings.symbolsWithIntervals;
+                    renderSelectedSymbols();
+                }
+                
+                // 詳細通知設定の復元
+                if (settings.alertConfig) {
+                    const config = settings.alertConfig;
+                    // 各アラートのON/OFF復元
+                    if (config.surgeAlert !== undefined) document.getElementById('surgeAlert').checked = config.surgeAlert;
+                    if (config.dropAlert !== undefined) document.getElementById('dropAlert').checked = config.dropAlert;
+                    if (config.volumeAlert !== undefined) document.getElementById('volumeAlert').checked = config.volumeAlert;
+                    if (config.volatilityAlert !== undefined) document.getElementById('volatilityAlert').checked = config.volatilityAlert;
+                    if (config.stagnationAlert !== undefined) document.getElementById('stagnationAlert').checked = config.stagnationAlert;
+                    if (config.whipsawAlert !== undefined) document.getElementById('whipsawAlert').checked = config.whipsawAlert;
+                    if (config.supportResistanceAlert !== undefined) document.getElementById('supportResistanceAlert').checked = config.supportResistanceAlert;
+                    if (config.consecutiveBarsAlert !== undefined) document.getElementById('consecutiveBarsAlert').checked = config.consecutiveBarsAlert;
+                    if (config.volumeDryUpAlert !== undefined) document.getElementById('volumeDryUpAlert').checked = config.volumeDryUpAlert;
+                    
+                    // 閾値設定の復元
+                    if (config.surgeThreshold) document.getElementById('surgeThreshold').value = config.surgeThreshold;
+                    if (config.dropThreshold) document.getElementById('dropThreshold').value = config.dropThreshold;
+                    if (config.volumeMultiplier) document.getElementById('volumeMultiplier').value = config.volumeMultiplier;
+                    if (config.volatilityThreshold) document.getElementById('volatilityThreshold').value = config.volatilityThreshold;
+                    if (config.stagnationHours) document.getElementById('stagnationHours').value = config.stagnationHours;
+                    if (config.whipsawCount) document.getElementById('whipsawCount').value = config.whipsawCount;
+                }
+                
+                // チェックリストを更新
+                updateChecklist();
+            } catch (error) {
+                console.error('初期設定読み込みエラー:', error);
+            }
+        }
+        
+        // 閾値設定の保存
+        window.saveThresholdSettings = async function() {
+            try {
+                const threshold = parseInt(thresholdSlider.value);
+                const notificationsEnabled = notificationToggle.checked;
+                
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        threshold: threshold,
+                        notificationsEnabled: notificationsEnabled,
+                        symbolsWithIntervals: selectedSymbols
+                    })
+                });
+                
+                if (response.ok) {
+                    // 成功メッセージを表示
+                    const thresholdSection = thresholdSlider.closest('.card-matrix');
+                    let statusMessage = thresholdSection.querySelector('#thresholdStatusMessage');
+                    if (!statusMessage) {
+                        statusMessage = document.createElement('div');
+                        statusMessage.id = 'thresholdStatusMessage';
+                        statusMessage.className = 'status-message success';
+                        statusMessage.style.cssText = 'display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; background: rgba(0, 255, 65, 0.1); color: var(--matrix-green); border: 1px solid var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green); text-align: center;';
+                        const buttonContainer = thresholdSection.querySelector('div[style*="text-align: center"]');
+                        buttonContainer.appendChild(statusMessage);
+                    }
+                    
+                    statusMessage.textContent = `✅ 通知設定を保存しました！ (閾値: ${threshold}点, 通知: ${notificationsEnabled ? 'ON' : 'OFF'})`;
+                    statusMessage.style.display = 'block';
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert('❌ 通知設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // Telegram設定の保存
+        window.saveTelegramSettings = async function() {
+            const token = document.getElementById('telegramToken').value;
+            const chatId = document.getElementById('chatId').value;
+            
+            if (!token || !chatId) {
+                alert('⚠️ ボットトークンとチャットIDを入力してください');
+                return;
+            }
+            
+            try {
+                const currentSettings = await loadSettings();
+                
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        telegram: {
+                            token: token,
+                            chatId: chatId
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    // 入力欄をクリア
+                    const tokenInput = document.getElementById('telegramToken');
+                    const chatIdInput = document.getElementById('chatId');
+                    tokenInput.value = '';
+                    tokenInput.placeholder = '新しいトークンを入力して変更';
+                    chatIdInput.value = '';
+                    chatIdInput.placeholder = '新しいチャットIDを入力して変更';
+                    
+                    // 設定済み表示を更新
+                    const telegramTokenStatus = document.getElementById('telegramTokenConfiguredStatus');
+                    const chatIdStatus = document.getElementById('chatIdConfiguredStatus');
+                    if (telegramTokenStatus) {
+                        telegramTokenStatus.textContent = `✅ 設定済み (${token.substring(0, 10)}***)`;
+                        telegramTokenStatus.style.display = 'block';
+                    }
+                    if (chatIdStatus) {
+                        chatIdStatus.textContent = `✅ 設定済み (${chatId})`;
+                        chatIdStatus.style.display = 'block';
+                    }
+                    
+                    // 成功メッセージを表示
+                    const telegramSection = document.getElementById('telegramToken').closest('.card-matrix');
+                    let statusMessage = telegramSection.querySelector('#telegramStatusMessage');
+                    if (!statusMessage) {
+                        statusMessage = document.createElement('div');
+                        statusMessage.id = 'telegramStatusMessage';
+                        statusMessage.className = 'status-message success';
+                        statusMessage.style.cssText = 'display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; background: rgba(0, 255, 65, 0.1); color: var(--matrix-green); border: 1px solid var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green); text-align: center;';
+                        const buttonContainer = telegramSection.querySelector('div[style*="text-align: center"]');
+                        buttonContainer.appendChild(statusMessage);
+                    }
+                    
+                    statusMessage.textContent = `✅ Telegram設定を保存しました！`;
+                    statusMessage.style.display = 'block';
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert('❌ Telegram設定の保存に失敗しました');
+                }
+            } catch (error) {
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // Telegramテスト送信
+        window.testTelegramConnection = async function(event) {
+            console.log('testTelegramConnection called');
+            
+            let token = document.getElementById('telegramToken').value;
+            let chatId = document.getElementById('chatId').value;
+            
+            console.log('入力値:', { token: token ? '入力あり' : '空', chatId: chatId ? '入力あり' : '空' });
+            
+            // 入力欄が空の場合、保存済みの設定を使用
+            if (!token || !chatId) {
+                console.log('入力欄が空なので、保存済み設定を確認');
+                
+                // 保存済みの設定があるかチェック
+                try {
+                    const settings = await loadSettings();
+                    console.log('読み込んだ設定:', settings);
+                    console.log('Telegram設定:', settings.telegram);
+                    
+                    if (settings.telegram?.isConfigured) {
+                        console.log('保存済み設定あり、USE_SAVEDを使用');
+                        // 保存済みの値でテスト送信（サーバー側で処理）
+                        token = 'USE_SAVED';
+                        chatId = 'USE_SAVED';
+                    } else {
+                        console.log('保存済み設定なし');
+                        alert('⚠️ ボットトークンとチャットIDを入力するか、設定を保存してください');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('設定読み込みエラー:', error);
+                    alert('⚠️ 設定の読み込みに失敗しました');
+                    return;
+                }
+            }
+            
+            // ボタンを無効化してテキストを変更
+            const testButton = event ? event.target : document.querySelector('[onclick*="testTelegramConnection"]');
+            const originalText = testButton.innerHTML;
+            testButton.disabled = true;
+            testButton.innerHTML = '<span>⏳</span> 送信中...';
+            testButton.style.opacity = '0.7';
             
             try {
                 const response = await fetch('/api/telegram/test', {
@@ -1125,79 +2279,110 @@
                 });
                 
                 if (response.ok) {
-                    alert('✅ Telegramに接続テストメッセージを送信しました！\nTelegramアプリを確認してください。');
+                    alert('✅ テストメッセージを送信しました！\n\nTelegramアプリでメッセージを確認してください。');
                 } else {
                     const error = await response.json();
-                    alert('❌ Telegram接続に失敗しました\n\n' + (error.message || 'トークンまたはチャットIDが正しくない可能性があります'));
+                    alert('❌ テスト送信に失敗しました\n\n' + (error.message || 'トークンまたはチャットIDが正しくない可能性があります'));
                 }
             } catch (error) {
-                alert('❌ Telegram接続テストエラー: ' + error.message);
+                alert('❌ エラー: ' + error.message);
+            } finally {
+                // ボタンを元に戻す
+                testButton.disabled = false;
+                testButton.innerHTML = originalText;
+                testButton.style.opacity = '1';
             }
         }
         
-        // APIヘルプ表示
-        function showApiHelp() {
-            alert('APIキーとは？\n\nMEXC取引所があなたのアプリに価格データを提供するための「パスワード」のようなものです。\n\n【安全性について】\n・「読み取り専用」で作成するので、資産の移動はできません\n・価格データの取得のみに使用されます\n\n【取得方法】\n1. MEXCにログイン\n2. セキュリティ → API管理へ\n3. 「APIキーを作成」をクリック\n4. 権限は「読み取り」のみにチェック\n5. 作成されたキーとシークレットをコピー\n\n※シークレットは一度しか表示されないので必ず保存してください');
-        }
-        
-        // Telegramヘルプ表示
-        function showTelegramHelp() {
-            alert('【Telegram通知の詳しい設定方法】\n\n📱 ステップ1：ボット作成\n1. Telegramアプリを開く\n2. 検索バーで「@BotFather」を検索\n3. 「開始」をタップ\n4. 「/newbot」と送信\n5. ボットの名前を入力（例：My Trading Bot）\n6. ボットのユーザー名を入力（例：mytrading_bot）\n7. 表示されるトークンをコピー\n\n📱 ステップ2：チャットID取得\n1. 作成したボットを検索して開く\n2. 「開始」または「/start」を送信\n3. 「@userinfobot」を検索して開く\n4. 表示される「Id: 」の数字をコピー\n\n✅ ステップ3：このページで設定\n1. トークンとチャットIDを入力\n2. 「接続テスト」ボタンで確認\n3. 設定を保存\n\n※トークンは他人に教えないでください！');
-        }
-        
-        // 設定保存
-        async function saveSettings() {
-            const settings = {
-                threshold: parseInt(thresholdSlider.value),
-                notificationsEnabled: notificationToggle.checked,
-                symbolsWithIntervals: selectedSymbols, // 銘柄ごとの通知間隔を含む
-                telegram: {
-                    token: document.getElementById('telegramToken').value,
-                    chatId: document.getElementById('chatId').value
-                }
-            };
-            
+        // 銘柄設定の保存
+        window.saveSymbolSettings = async function() {
             try {
+                if (selectedSymbols.length === 0) {
+                    alert('⚠️ 最低1つの銘柄を選択してください');
+                    return;
+                }
+                
+                // 現在の設定を取得
+                const currentSettings = await loadSettings();
+                
                 const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify(settings)
+                    body: JSON.stringify({
+                        ...currentSettings,
+                        symbolsWithIntervals: selectedSymbols
+                    })
                 });
                 
                 if (response.ok) {
-                    // 成功メッセージとダッシュボードボタンを表示
-                    const statusMessage = document.getElementById('statusMessage');
-                    const dashboardBtn = document.getElementById('dashboardBtn');
-                    const saveBtn = document.querySelector('.save-btn');
+                    // 成功メッセージを表示
+                    const symbolSection = document.getElementById('selectedSymbols').closest('.card-matrix');
+                    let statusMessage = symbolSection.querySelector('#symbolStatusMessage');
+                    if (!statusMessage) {
+                        statusMessage = document.createElement('div');
+                        statusMessage.id = 'symbolStatusMessage';
+                        statusMessage.className = 'status-message success';
+                        statusMessage.style.cssText = 'display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; background: rgba(0, 255, 65, 0.1); color: var(--matrix-green); border: 1px solid var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green); text-align: center;';
+                        const buttonContainer = symbolSection.querySelector('div[style*="text-align: center"]');
+                        buttonContainer.appendChild(statusMessage);
+                    }
                     
+                    const symbolNames = selectedSymbols.map(s => s.symbol).join(', ');
+                    statusMessage.textContent = `✅ 銘柄設定を保存しました！ (${symbolNames})`;
                     statusMessage.style.display = 'block';
-                    statusMessage.innerHTML = '✅ 保存完了！';
-                    dashboardBtn.style.display = 'inline-block';
-                    
-                    // ボタンを一時的に変更
-                    saveBtn.textContent = '✅ 保存完了';
-                    saveBtn.style.background = 'rgba(0, 255, 65, 0.3)';
-                    
-                    // 3秒後に元に戻す
                     setTimeout(() => {
                         statusMessage.style.display = 'none';
-                        saveBtn.textContent = '設定を保存';
-                        saveBtn.style.background = 'rgba(0, 255, 65, 0.2)';
                     }, 3000);
                 } else {
-                    alert('設定の保存に失敗しました');
+                    alert('❌ 銘柄設定の保存に失敗しました');
                 }
             } catch (error) {
-                console.error('保存エラー:', error);
-                alert('設定の保存中にエラーが発生しました');
+                alert('❌ 保存エラー: ' + error.message);
+            }
+        }
+        
+        // 保存済み設定でTelegramテスト送信
+        window.testTelegramWithSaved = async function(event) {
+            const testButton = event ? event.target : document.getElementById('testWithSavedBtn');
+            const originalText = testButton.innerHTML;
+            testButton.disabled = true;
+            testButton.innerHTML = '<span>⏳</span> 送信中...';
+            testButton.style.opacity = '0.7';
+            
+            try {
+                const response = await fetch('/api/telegram/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        token: 'USE_SAVED',
+                        chatId: 'USE_SAVED'
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ テストメッセージを送信しました！\n\nTelegramアプリでメッセージを確認してください。');
+                } else {
+                    const error = await response.json();
+                    alert('❌ テスト送信に失敗しました\n\n' + (error.message || 'Telegram設定を確認してください'));
+                }
+            } catch (error) {
+                alert('❌ エラー: ' + error.message);
+            } finally {
+                testButton.disabled = false;
+                testButton.innerHTML = originalText;
+                testButton.style.opacity = '1';
             }
         }
         
         // 初期表示
         renderSelectedSymbols();
+        loadInitialSettings();
     </script>
 </body>
 </html>

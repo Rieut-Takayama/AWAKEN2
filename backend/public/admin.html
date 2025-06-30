@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWAKEN2 - 管理画面</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&family=M+PLUS+1+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'M PLUS 1 Code', 'Noto Sans JP', monospace;
+            background: #000000;
+            background-image: radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .admin-login {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            padding: 2rem;
+            max-width: 400px;
+            margin: 4rem auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 10px #00ff41;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #00ff41;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .stat-label {
+            color: rgba(0, 255, 65, 0.7);
+            margin-top: 0.5rem;
+        }
+
+        .user-table {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+
+        th {
+            background: rgba(0, 255, 65, 0.1);
+            font-weight: 600;
+            color: #00ff41;
+        }
+
+        tr:hover {
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .symbol-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid #00ff41;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin: 0.1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(0, 255, 65, 0.7);
+        }
+
+        .error {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid #ff0040;
+            color: #ff0040;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        #dashboard {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AWAKEN2 管理画面</h1>
+        
+        <!-- ログインフォーム -->
+        <div id="loginForm" class="admin-login">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">管理者ログイン</h2>
+            <input type="password" id="adminKey" placeholder="管理者キー" onkeypress="if(event.key==='Enter')login()">
+            <button onclick="login()">ログイン</button>
+            <div id="loginError" style="color: #ff0040; margin-top: 1rem; display: none;"></div>
+        </div>
+
+        <!-- ダッシュボード -->
+        <div id="dashboard">
+            <!-- 統計情報 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">総ユーザー数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeToday">0</div>
+                    <div class="stat-label">本日のアクティブ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="withSettings">0</div>
+                    <div class="stat-label">設定済みユーザー</div>
+                </div>
+            </div>
+
+            <!-- ユーザー一覧 -->
+            <div class="user-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>メールアドレス</th>
+                            <th>登録日時</th>
+                            <th>最終ログイン</th>
+                            <th>監視通貨</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userList">
+                        <tr>
+                            <td colspan="4" class="loading">読み込み中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button onclick="exportCSV()" style="margin-top: 2rem; width: auto; padding: 0.8rem 2rem;">
+                CSV出力
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let adminKey = '';
+        let userData = [];
+
+        function login() {
+            const key = document.getElementById('adminKey').value;
+            if (!key) return;
+            
+            adminKey = key;
+            loadUsers();
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'x-admin-key': adminKey  // 小文字に変更！
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('認証エラー');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    userData = data.users;
+                    displayDashboard(data);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                document.getElementById('loginError').textContent = error.message;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function displayDashboard(data) {
+            // ログインフォームを隠す
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+
+            // 統計情報を更新
+            document.getElementById('totalUsers').textContent = data.totalUsers;
+            
+            // 本日のアクティブユーザー数
+            const today = new Date().toDateString();
+            const activeToday = data.users.filter(u => 
+                new Date(u.lastLogin).toDateString() === today
+            ).length;
+            document.getElementById('activeToday').textContent = activeToday;
+            
+            // 設定済みユーザー数
+            const withSettings = data.users.filter(u => u.hasSettings).length;
+            document.getElementById('withSettings').textContent = withSettings;
+
+            // ユーザー一覧を表示
+            const tbody = document.getElementById('userList');
+            tbody.innerHTML = data.users.map(user => `
+                <tr>
+                    <td>${user.email}</td>
+                    <td>${new Date(user.registeredAt).toLocaleString('ja-JP')}</td>
+                    <td>${new Date(user.lastLogin).toLocaleString('ja-JP')}</td>
+                    <td>
+                        ${user.watchedSymbols.map(s => 
+                            `<span class="symbol-badge">${s.symbol}</span>`
+                        ).join('') || '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportCSV() {
+            let csv = 'メールアドレス,登録日時,最終ログイン,監視通貨\n';
+            
+            userData.forEach(user => {
+                const symbols = user.watchedSymbols.map(s => s.symbol).join(' ');
+                csv += `"${user.email}","${new Date(user.registeredAt).toLocaleString('ja-JP')}","${new Date(user.lastLogin).toLocaleString('ja-JP')}","${symbols}"\n`;
+            });
+
+            // ダウンロード
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `awaken2_users_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -4,10 +4,13 @@
   "description": "AWAKEN2 Cryptocurrency Analysis Backend API",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/app.simple.ts",
+    "dev:full": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "webpack",
+    "build:simple": "webpack --config webpack.simple.config.js",
     "build:tsc": "tsc",
-    "start": "node dist/app.js",
+    "start": "node server.simple.js",
+    "start:simple": "node server.simple.js",
     "test": "jest",
     "test:integration": "jest --testPathPattern=tests/integration --runInBand",
     "test:watch": "jest --watch",
@@ -27,9 +30,11 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.54.0",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -43,6 +48,7 @@
     "node-telegram-bot-api": "^0.64.0",
     "redis": "^4.7.1",
     "tsconfig-paths": "^4.2.0",
+    "uuid": "^11.1.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
