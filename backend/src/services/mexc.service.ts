@@ -226,6 +226,25 @@ class MexcService {
             console.log(`Updated ${prices.length} prices at ${new Date().toISOString()}`);
         }, interval);
     }
+
+    // 全取引ペアを取得
+    async getAllSymbols(): Promise<any[]> {
+        try {
+            const response = await axios.get(`${this.baseUrl}/api/v3/exchangeInfo`);
+            
+            if (response.data && response.data.symbols) {
+                return response.data.symbols.filter((symbol: any) => 
+                    symbol.status === 'TRADING' && 
+                    symbol.isSpotTradingAllowed
+                );
+            }
+            
+            return [];
+        } catch (error) {
+            console.error('全銘柄取得エラー:', error);
+            return [];
+        }
+    }
 }
 
 export const mexcService = new MexcService();

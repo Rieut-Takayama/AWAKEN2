@@ -994,8 +994,9 @@
                 <span style="color: #ffaa00;">※ 複数選択すると通知頻度が増える可能性があります</span>
             </p>
             <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button onclick="addPopularMemeCoins()" style="background: rgba(255, 0, 64, 0.2); border: 1px solid #ff0040; color: #ff0040; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">🚀 人気ミームコイン追加</button>
-                <button onclick="addMajorCoins()" style="background: rgba(0, 170, 255, 0.2); border: 1px solid #00aaff; color: #00aaff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">💎 メジャーコイン追加</button>
+                <div style="color: rgba(0, 255, 65, 0.7); font-size: 0.9rem; margin: 0.5rem 0;">
+                    ※ MEXC取引所の全USDT建て通貨から検索できます
+                </div>
             </div>
             
             <div class="input-group" style="position: relative;">
@@ -1457,22 +1458,22 @@
                 );
                 
                 if (matches.length > 0) {
-                    symbolSuggestions.innerHTML = matches.slice(0, 5).map(symbol => 
-                        `<div class="suggestion-item" onclick="selectSymbol('${symbol}')">${symbol}/USDT</div>`
+                    symbolSuggestions.innerHTML = matches.map(item => 
+                        `<div class="suggestion-item" onclick="selectSymbol('${item.symbol}')">${item.symbol}</div>`
                     ).join('');
                     symbolSuggestions.style.display = 'block';
                 } else {
-                    symbolSuggestions.style.display = 'none';
+                    symbolSuggestions.innerHTML = '<div class="suggestion-item" style="color: rgba(255, 255, 255, 0.5);">見つかりません</div>';
+                    symbolSuggestions.style.display = 'block';
                 }
             } else {
                 symbolSuggestions.style.display = 'none';
             }
         });
         
-        // 銘柄選択（1通貨のみ！）
-        function selectSymbol(symbol) {
+        // 銘柄選択（最大3通貨まで）
+        function selectSymbol(symbolPair) {
             if (selectedSymbols.length < 3) {
-                const symbolPair = symbol + '/USDT';
                 if (!selectedSymbols.some(s => s.symbol === symbolPair)) {
                     selectedSymbols.push({ symbol: symbolPair, interval: 60 });
                     renderSelectedSymbols();
@@ -1525,18 +1526,24 @@
             }).join('');
         }
         
-        // 人気ミームコインを追加（1通貨のみ！）
-        function addPopularMemeCoins() {
-            selectedSymbols = []; // 一旦クリア
-            selectedSymbols.push({ symbol: 'PEPE/USDT', interval: 30 }); // PEPEのみ
-            renderSelectedSymbols();
-        }
-        
-        // メジャーコインを追加（1通貨のみ！）
-        function addMajorCoins() {
-            selectedSymbols = []; // 一旦クリア
-            selectedSymbols.push({ symbol: 'BTC/USDT', interval: 60 }); // BTCのみ
-            renderSelectedSymbols();
+        // MEXC APIから銘柄検索
+        async function searchMexcSymbols(query) {
+            try {
+                const response = await fetch(`/api/mexc/symbols?search=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.data || [];
+                }
+                return [];
+            } catch (error) {
+                console.error('銘柄検索エラー:', error);
+                return [];
+            }
         }
         
         // ドキュメント全体のクリックイベント

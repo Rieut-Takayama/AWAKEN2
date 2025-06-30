@@ -494,6 +494,55 @@ app.get('/api/realtime/analyze/:symbol', authMiddleware, async (req, res) => {
     }
 });
 
+// MEXC全銘柄取得API
+app.get('/api/mexc/symbols', authMiddleware, async (req, res) => {
+    try {
+        const { search } = req.query;
+        
+        // MEXC APIから全取引ペアを取得
+        const allSymbols = await mexcService.getAllSymbols();
+        
+        if (!allSymbols || allSymbols.length === 0) {
+            return res.json({
+                success: true,
+                data: []
+            });
+        }
+        
+        // USDT建ての通貨のみフィルタリング
+        let filteredSymbols = allSymbols
+            .filter((symbol: any) => symbol.symbol.endsWith('USDT'))
+            .map((symbol: any) => ({
+                symbol: symbol.symbol.replace('USDT', '/USDT'),
+                baseAsset: symbol.baseAsset,
+                quoteAsset: symbol.quoteAsset
+            }));
+        
+        // 検索文字列がある場合はフィルタリング
+        if (search && typeof search === 'string') {
+            const searchLower = search.toLowerCase();
+            filteredSymbols = filteredSymbols.filter((symbol: any) => 
+                symbol.symbol.toLowerCase().includes(searchLower) ||
+                symbol.baseAsset.toLowerCase().includes(searchLower)
+            );
+        }
+        
+        // アルファベット順にソート
+        filteredSymbols.sort((a: any, b: any) => a.symbol.localeCompare(b.symbol));
+        
+        return res.json({
+            success: true,
+            data: filteredSymbols.slice(0, 100) // 最大100件まで返す
+        });
+    } catch (error) {
+        console.error('MEXC銘柄取得エラー:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'MEXC銘柄取得エラー'
+        });
+    }
+});
+
 // AI分析API
 app.post('/api/analyze/force', authMiddleware, async (req, res) => {
     try {
