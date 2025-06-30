@@ -291,8 +291,9 @@
         .currency-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 1.5rem;
+            min-height: 2.5rem;
         }
 
         .currency-name {
@@ -305,9 +306,12 @@
 
         .currency-price {
             font-family: 'Roboto Mono', monospace;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: #00ff41;
+            line-height: 1.2;
+            word-break: break-all;
+            max-width: 50%;
         }
 
         .score-display {
@@ -624,17 +628,7 @@
     <script src="/matrix-rain.js"></script>
     
     <header class="header">
-        <a href="#" class="logo">AWAKEN2</a>
-        <div class="hamburger-menu" onclick="toggleMobileMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="header-info" id="mobileMenu">
-            <a href="/settings.html" class="settings-btn">⚙️ 設定</a>
-            <a href="/guide.html" class="settings-btn" style="background: rgba(0, 170, 255, 0.1); border-color: #00aaff; color: #00aaff;">📖 使い方</a>
-            <button class="logout-btn" onclick="logout()">ログアウト</button>
-        </div>
+        <!-- 共通ヘッダーがJSで挿入されます -->
     </header>
 
     <main class="main-container">
@@ -753,13 +747,7 @@
     </main>
 
     <script>
-        // ハンバーガーメニューのトグル
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            const hamburger = document.querySelector('.hamburger-menu');
-            menu.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        }
+        // toggleMobileMenu関数はheader.js内に定義済み
         
         // 認証チェック
         const token = localStorage.getItem('token');
@@ -831,7 +819,7 @@
                     <div class="${cardClass}">
                         <div class="currency-header">
                             <div class="currency-name">${currency.name || currency.symbol}</div>
-                            <div class="currency-price">$${(currency.price || 0).toLocaleString()}</div>
+                            <div class="currency-price" style="text-align: right; font-size: 0.9rem;">$${(currency.price || 0).toLocaleString()}</div>
                         </div>
                         
                         <div class="score-display">
@@ -861,6 +849,22 @@
                         <div class="trend-indicator ${currency.trend === 'up' ? 'trend-up' : 'trend-down'}">
                             <span>${currency.change24h || currency.change || '--'}</span>
                         </div>
+                        
+                        <!-- 個別分析ボタンを追加 -->
+                        <button class="analyze-single-btn" onclick="analyzeSingleCurrency('${currency.symbol}', ${currency.price || 0})" style="
+                            background: rgba(255, 170, 0, 0.1);
+                            border: 1px solid #ffaa00;
+                            color: #ffaa00;
+                            padding: 0.5rem;
+                            width: 100%;
+                            margin-top: 0.5rem;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(255, 170, 0, 0.2)'" onmouseout="this.style.background='rgba(255, 170, 0, 0.1)'">
+                            🔍 AI分析
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -1500,6 +1504,264 @@
         // 自動更新を削除 - 手動リフレッシュのみ
         // 初回データ取得
         fetchRealTimeData();
+        
+        // 個別通貨のAI分析
+        async function analyzeSingleCurrency(symbol, currentPrice) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '🔄 分析中...';
+            
+            try {
+                // 個別通貨の強制AI分析を実行
+                const response = await fetch('/api/analyze/force', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        symbols: [symbol.replace('/', '')],
+                        singleCurrency: true  // 個別分析フラグ
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 結果をモーダルで表示（個別分析用のフォーマット）
+                    showSingleCurrencyAnalysis(result.data[0], symbol, currentPrice);
+                    
+                } else {
+                    const error = await response.text();
+                    alert(`❌ 分析に失敗しました: ${error}`);
+                }
+            } catch (error) {
+                console.error('個別分析エラー:', error);
+                alert('❌ 分析エラーが発生しました');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔍 AI分析';
+            }
+        }
+        
+        // 個別通貨の分析結果表示
+        function showSingleCurrencyAnalysis(result, symbol, currentPrice) {
+            const modal = document.getElementById('aiAnalysisModal');
+            const content = document.getElementById('aiAnalysisContent');
+            
+            if (!result) {
+                content.innerHTML = '<div style="color: #ff0040; text-align: center; padding: 2rem;">分析結果の取得に失敗しました</div>';
+                modal.style.display = 'block';
+                return;
+            }
+            
+            const score = result.score || 0;
+            const recommendation = result.recommendation || 'HOLD';
+            const reasoning = result.reasoning || '分析データが不足しています';
+            const keyFactors = result.keyFactors || [];
+            const strategy = result.tradingStrategy || {};
+            const technicalIndicators = result.technicalIndicators || {};
+            
+            content.innerHTML = `
+                <div style="color: #00ff41; font-family: 'M PLUS 1 Code', monospace;">
+                    <h3 style="color: #ffaa00; margin-bottom: 1rem;">🎯 ${symbol} 個別AI分析</h3>
+                    
+                    <!-- 総合評価 -->
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 2px solid ${
+                        score >= 75 ? '#ff0040' : 
+                        score >= 60 ? '#ffaa00' : 
+                        'rgba(0, 255, 65, 0.3)'
+                    }; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="color: #00ff41; margin-bottom: 0.5rem; font-size: 1.5rem;">
+                                    ${symbol}
+                                </h4>
+                                <div style="color: rgba(0, 255, 65, 0.7); font-size: 1rem;">
+                                    現在価格: $${currentPrice.toLocaleString()}
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; font-weight: bold; color: ${
+                                    score >= 75 ? '#ff0040' : 
+                                    score >= 60 ? '#ffaa00' : 
+                                    '#00ff41'
+                                }; text-shadow: 0 0 20px currentColor;">${score}点</div>
+                                <div style="font-size: 1rem; color: rgba(0, 255, 65, 0.6);">買い度指数</div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI推奨 -->
+                        <div style="background: ${recommendation === 'BUY' ? 'rgba(0, 255, 65, 0.2)' : 'rgba(0, 0, 0, 0.5)'}; 
+                                    border: 1px solid ${recommendation === 'BUY' ? '#00ff41' : 'rgba(0, 255, 65, 0.3)'}; 
+                                    padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                            <div style="font-weight: bold; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                                🤖 AI推奨: <span style="color: ${
+                                    recommendation === 'BUY' ? '#00ff41' : 
+                                    recommendation === 'SELL' ? '#ff0040' : 
+                                    '#ffaa00'
+                                }">${recommendation}</span>
+                            </div>
+                            <p style="color: rgba(0, 255, 65, 0.8); line-height: 1.6;">
+                                ${reasoning}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 詳細トレーディング戦略 -->
+                    ${strategy.entry || strategy.dca || strategy.profitTargets || strategy.stopLoss ? `
+                    <div style="background: rgba(255, 170, 0, 0.05); border: 1px solid rgba(255, 170, 0, 0.3); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <h4 style="color: #ffaa00; margin-bottom: 1rem;">📊 詳細トレーディング戦略</h4>
+                        
+                        ${strategy.entry ? `
+                        <div style="margin-bottom: 1.5rem;">
+                            <h5 style="color: #00ff41; margin-bottom: 0.5rem;">エントリーポイント</h5>
+                            <div style="background: rgba(0, 0, 0, 0.5); padding: 1rem; border-radius: 4px;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                    <div>
+                                        <div style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem;">推奨エントリー価格</div>
+                                        <div style="color: #00ff41; font-size: 1.2rem; font-weight: bold;">
+                                            $${strategy.entry.price?.toFixed(2) || currentPrice.toFixed(2)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem;">推奨ポジションサイズ</div>
+                                        <div style="color: #ffaa00; font-size: 1.2rem; font-weight: bold;">
+                                            ${strategy.entry.position || '資金の10-20%'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem;">タイミング</div>
+                                        <div style="color: #00ff41; font-size: 1.2rem; font-weight: bold;">
+                                            ${strategy.entry.timing || '即時'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${strategy.dca && strategy.dca.length > 0 ? `
+                        <div style="margin-bottom: 1.5rem;">
+                            <h5 style="color: #00ff41; margin-bottom: 0.5rem;">🎯 ドルコスト平均法（DCA）戦略</h5>
+                            <div style="background: rgba(0, 0, 0, 0.5); padding: 1rem; border-radius: 4px;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid rgba(0, 255, 65, 0.3);">
+                                            <th style="padding: 0.5rem; text-align: left; color: #ffaa00;">価格</th>
+                                            <th style="padding: 0.5rem; text-align: left; color: #ffaa00;">現在価格から</th>
+                                            <th style="padding: 0.5rem; text-align: left; color: #ffaa00;">推奨購入額</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${strategy.dca.map(level => `
+                                        <tr style="border-bottom: 1px solid rgba(0, 255, 65, 0.1);">
+                                            <td style="padding: 0.5rem; color: #00ff41;">$${level.price.toFixed(2)}</td>
+                                            <td style="padding: 0.5rem; color: ${level.percentage < 0 ? '#ff0040' : '#00ff41'};">
+                                                ${level.percentage}%
+                                            </td>
+                                            <td style="padding: 0.5rem; color: rgba(0, 255, 65, 0.8);">${level.amount}</td>
+                                        </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${strategy.profitTargets && strategy.profitTargets.length > 0 ? `
+                        <div style="margin-bottom: 1.5rem;">
+                            <h5 style="color: #00ff41; margin-bottom: 0.5rem;">💰 利益確定目標</h5>
+                            <div style="background: rgba(0, 0, 0, 0.5); padding: 1rem; border-radius: 4px;">
+                                ${strategy.profitTargets.map((target, index) => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; 
+                                            ${index < strategy.profitTargets.length - 1 ? 'border-bottom: 1px solid rgba(0, 255, 65, 0.1);' : ''}">
+                                    <div>
+                                        <span style="color: #ffaa00;">目標${index + 1}:</span>
+                                        <span style="color: #00ff41; font-weight: bold; margin-left: 0.5rem;">
+                                            $${target.price.toFixed(2)}
+                                        </span>
+                                        <span style="color: rgba(0, 255, 65, 0.6); margin-left: 0.5rem;">
+                                            (+${target.percentage}%)
+                                        </span>
+                                    </div>
+                                    <div style="color: rgba(0, 255, 65, 0.8);">
+                                        ${target.sellRatio}
+                                    </div>
+                                </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${strategy.stopLoss ? `
+                        <div>
+                            <h5 style="color: #ff0040; margin-bottom: 0.5rem;">⛔ リスク管理（ストップロス）</h5>
+                            <div style="background: rgba(255, 0, 64, 0.1); border: 1px solid rgba(255, 0, 64, 0.3); padding: 1rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="color: rgba(255, 0, 64, 0.8); font-size: 0.85rem;">推奨損切りライン</div>
+                                        <div style="color: #ff0040; font-size: 1.5rem; font-weight: bold;">
+                                            $${strategy.stopLoss.price.toFixed(2)}
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="color: rgba(255, 0, 64, 0.8); font-size: 0.85rem;">最大損失</div>
+                                        <div style="color: #ff0040; font-size: 1.2rem; font-weight: bold;">
+                                            ${strategy.stopLoss.percentage}%
+                                        </div>
+                                    </div>
+                                </div>
+                                <p style="color: rgba(255, 0, 64, 0.6); margin-top: 0.5rem; font-size: 0.85rem;">
+                                    ${strategy.stopLoss.reason || '重要なサポートレベルを下回った場合、損失を限定するため'}
+                                </p>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <!-- テクニカル指標詳細 -->
+                    ${technicalIndicators ? `
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <h4 style="color: #00ff41; margin-bottom: 1rem;">📈 テクニカル指標詳細</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                            ${Object.entries(technicalIndicators).map(([key, value]) => `
+                            <div style="background: rgba(0, 0, 0, 0.5); padding: 1rem; border-radius: 4px; text-align: center;">
+                                <div style="color: rgba(0, 255, 65, 0.6); font-size: 0.85rem; margin-bottom: 0.3rem;">
+                                    ${key.toUpperCase()}
+                                </div>
+                                <div style="color: #00ff41; font-size: 1.5rem; font-weight: bold;">
+                                    ${typeof value === 'number' ? value.toFixed(2) : value}
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- 重要ファクター -->
+                    ${keyFactors && keyFactors.length > 0 ? `
+                    <div style="background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.3); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <h4 style="color: #00ff41; margin-bottom: 1rem;">🎯 重要な判断要因</h4>
+                        <ul style="color: rgba(0, 255, 65, 0.8); line-height: 1.8;">
+                            ${keyFactors.map(factor => `<li>${factor}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- 免責事項 -->
+                    <div style="text-align: center; margin-top: 2rem; padding: 1rem; background: rgba(255, 0, 64, 0.05); border: 1px solid rgba(255, 0, 64, 0.3); border-radius: 4px;">
+                        <p style="color: rgba(255, 0, 64, 0.8); font-size: 0.85rem; margin: 0;">
+                            ⚠️ これは参考情報です。投資判断は自己責任でお願いします。<br>
+                            必ず余剰資金で投資を行い、リスク管理を徹底してください。
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
     </script>
 </body>
 </html>
