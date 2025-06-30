@@ -1450,9 +1450,10 @@
             if (value.length > 0) {
                 // MEXC APIから銘柄を検索
                 const searchResults = await searchMexcSymbols(value);
+                // 先に30件に絞ってから、既に選択されたものを除外
                 const matches = searchResults
-                    .filter(item => !selectedSymbols.some(s => s.symbol === item.symbol))
-                    .slice(0, 20); // 最大20件表示
+                    .slice(0, 30) // 最大30件表示
+                    .filter(item => !selectedSymbols.some(s => s.symbol === item.symbol));
                 
                 if (matches.length > 0) {
                     symbolSuggestions.innerHTML = matches.map(item => 
