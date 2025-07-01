@@ -1001,10 +1001,14 @@
             
             <div class="input-group" style="position: relative;">
                 <label for="symbolInput">銘柄を入力</label>
-                <input type="text" id="symbolInput" class="input-matrix" 
-                       placeholder="銘柄を検索"
-                       autocomplete="off">
-                <div id="symbolSuggestions" class="suggestions-dropdown" style="display: none;"></div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="symbolInput" class="input-matrix" 
+                           placeholder="例: OKM, BTC, ETH"
+                           autocomplete="off"
+                           style="flex: 1;">
+                    <button onclick="addSymbolDirect()" style="background: rgba(0, 255, 65, 0.2); border: 1px solid #00ff41; color: #00ff41; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">追加</button>
+                </div>
+                <div id="symbolError" style="color: #ff0040; font-size: 0.85rem; margin-top: 0.25rem; display: none;"></div>
             </div>
             
             <div id="selectedSymbols" style="margin-top: 1rem;">
@@ -1441,47 +1445,63 @@
             { symbol: 'BTC/USDT', interval: 60 }
         ];
         
-        // 銘柄入力のオートコンプリート
+        // 銘柄入力
         const symbolInput = document.getElementById('symbolInput');
-        const symbolSuggestions = document.getElementById('symbolSuggestions');
+        const symbolError = document.getElementById('symbolError');
         
-        symbolInput.addEventListener('input', async (e) => {
-            const value = e.target.value.toUpperCase();
-            if (value.length > 0) {
-                // MEXC APIから銘柄を検索
-                const searchResults = await searchMexcSymbols(value);
-                // 先に30件に絞ってから、既に選択されたものを除外
-                const matches = searchResults
-                    .slice(0, 30) // 最大30件表示
-                    .filter(item => !selectedSymbols.some(s => s.symbol === item.symbol));
-                
-                if (matches.length > 0) {
-                    symbolSuggestions.innerHTML = matches.map(item => 
-                        `<div class="suggestion-item" onclick="selectSymbol('${item.symbol}')">${item.symbol}</div>`
-                    ).join('');
-                    symbolSuggestions.style.display = 'block';
-                } else {
-                    symbolSuggestions.innerHTML = '<div class="suggestion-item" style="color: rgba(255, 255, 255, 0.5);">見つかりません</div>';
-                    symbolSuggestions.style.display = 'block';
-                }
-            } else {
-                symbolSuggestions.style.display = 'none';
+        // Enterキーで追加
+        symbolInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addSymbolDirect();
             }
         });
         
-        // 銘柄選択（最大3通貨まで）
-        function selectSymbol(symbolPair) {
-            if (selectedSymbols.length < 3) {
-                if (!selectedSymbols.some(s => s.symbol === symbolPair)) {
-                    selectedSymbols.push({ symbol: symbolPair, interval: 60 });
-                    renderSelectedSymbols();
-                }
-            } else {
-                alert('⚠️ 最大3通貨まで選択可能です');
+        // 直接入力で銘柄を追加
+        window.addSymbolDirect = async function() {
+            const input = symbolInput.value.trim().toUpperCase();
+            if (!input) return;
+            
+            // エラー表示をクリア
+            symbolError.style.display = 'none';
+            symbolError.textContent = '';
+            
+            // 最大3通貨チェック
+            if (selectedSymbols.length >= 3) {
+                symbolError.textContent = '最大3通貨まで選択可能です';
+                symbolError.style.display = 'block';
+                return;
             }
-            symbolInput.value = '';
-            symbolSuggestions.style.display = 'none';
-        }
+            
+            // USDTペアの形式に変換
+            let symbolPair = input;
+            if (!input.includes('/')) {
+                symbolPair = input + '/USDT';
+            }
+            
+            // 既に選択されているかチェック
+            if (selectedSymbols.some(s => s.symbol === symbolPair)) {
+                symbolError.textContent = 'この通貨は既に選択されています';
+                symbolError.style.display = 'block';
+                return;
+            }
+            
+            // MEXC APIで存在確認
+            const searchResults = await searchMexcSymbols(input);
+            const exists = searchResults.some(item => 
+                item.symbol === symbolPair || 
+                item.baseAsset === input
+            );
+            
+            if (exists) {
+                selectedSymbols.push({ symbol: symbolPair, interval: 60 });
+                renderSelectedSymbols();
+                symbolInput.value = '';
+            } else {
+                symbolError.textContent = `${input}はMEXCに存在しません`;
+                symbolError.style.display = 'block';
+            }
+        };
+        
         
         // 銘柄削除
         function removeSymbol(symbolPair) {
@@ -1550,13 +1570,6 @@
                 return [];
             }
         }
-        
-        // ドキュメント全体のクリックイベント
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.input-group')) {
-                symbolSuggestions.style.display = 'none';
-            }
-        });
         
         // Claude AI設定の保存
         window.saveClaudeSettings = async function() {
